@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  beheerder
+  medewerker
+  lezer
+}
+
+enum GebruikerStatus {
+  actief
+  geblokkeerd
+}
+
+enum UitslagType {
+  volledig
+  klein
+}
+
+enum UitslagTarief {
+  standaard
+  geetiketteerd
+}
+
+model Gebruiker {
+  id        String          @id @default(uuid())
+  naam      String
+  email     String          @unique
+  rol       Rol             @default(medewerker)
+  status    GebruikerStatus @default(actief)
+  createdAt DateTime        @default(now())
+
+  loginCodes     LoginCode[]
+  devicePincodes DevicePincode[]
+}
+
+// Eenmalige inlogcode, zie ontwerpdocument §3.5 / §4.2
+model LoginCode {
+  id          String   @id @default(uuid())
+  gebruiker   Gebruiker @relation(fields: [gebruikerId], references: [id])
+  gebruikerId String
+  codeHash    String
+  verlooptOp  DateTime
+  gebruikt    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// Pincode per toestel, zie §3.5 / §4.3 (harde 2-wekelijkse hergeldigheidsgrens)
+model DevicePincode {
+  id             String   @id @default(uuid())
+  gebruiker      Gebruiker @relation(fields: [gebruikerId], references: [id])
+  gebruikerId    String
+  deviceId       String
+  pincodeHash    String
+  sessieVerlooptOp DateTime
+  createdAt      DateTime @default(now())
+
+  @@unique([gebruikerId, deviceId])
+}
+
+// Actuele voorraad, zie §3.1
+model Box {
+  id               String   @id @default(uuid())
+  boxId            Int      @unique @default(autoincrement())
+  productafkomst   String
+  proces           String
+  model            String
+  partijcode       String
+  productiedatum   DateTime
+  aantalKazen      Int
+  nettoGram        Int
+  opmerking        String?
+  createdAt        DateTime @default(now())
+  laatsteMutatie   DateTime @updatedAt
+}
+
+// Onveranderlijke transactiehistorie, zie §3.2 (transactionId = idempotency-sleutel)
+model InslagLog {
+  id             String   @id @default(uuid())
+  transactionId  String   @unique
+  boxId          Int
+  productafkomst String
+  proces         String
+  model          String
+  partijcode     String
+  productiedatum DateTime
+  aantalKazen    Int
+  nettoGram      Int
+  opmerking      String?
+  inslagtijd     DateTime @default(now())
+}
+
+model UitslagLog {
+  id             String        @id @default(uuid())
+  transactionId  String        @unique
+  boxId          Int
+  productafkomst String
+  proces         String
+  model          String
+  partijcode     String
+  productiedatum DateTime
+  uitslagType    UitslagType
+  tarief         UitslagTarief
+  aantalKazenUit Int
+  nettoGramUit   Int
+  opmerking      String?
+  uitslagtijd    DateTime      @default(now())
+}
+
+// Dagelijkse aggregatie, zie §3.3 (basis voor kg-dagen-opslagberekening)
+model DagVoorraadSnapshot {
+  id             String   @id @default(uuid())
+  datum          DateTime
+  partijcode     String
+  productafkomst String
+  model          String
+  nettoGram      Int
+  createdAt      DateTime @default(now())
+
+  @@unique([datum, partijcode, productafkomst, model])
+}
+
+// Validatielijst productafkomst, zie §6 "Leveranciers"-scherm (alleen beheerder)
+model Leverancier {
+  id        String   @id @default(uuid())
+  naam      String   @unique
+  actief    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

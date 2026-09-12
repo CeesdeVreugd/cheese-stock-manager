@@ -20,14 +20,18 @@ export default async function DashboardPage() {
 
   const overzichten = [
     { href: "/voorraad", label: "Voorraad", sub: `${boxCount} boxen actief` },
+    { href: "/inslag/overzicht", label: "Inslag overzicht", sub: "Historie & details" },
+    { href: "/uitslag/overzicht", label: "Uitslag overzicht", sub: "Historie & details" },
     { href: "/facturatie", label: "Facturatie", sub: "Weekoverzicht & PDF" },
-    ...(gebruiker.rol === "beheerder"
+  ];
+
+  const beheer =
+    gebruiker.rol === "beheerder"
       ? [
           { href: "/validaties", label: "Validatielijsten", sub: "Productafkomst, proces, model" },
           { href: "/gebruikers", label: "Gebruikers", sub: "Aanmaken, rol en toegang" },
         ]
-      : []),
-  ];
+      : [];
 
   return (
     <OntgrendelGate>
@@ -39,7 +43,7 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3">
               <img src="/logo-emblem.png" alt="" className="h-9 w-auto" />
               <div>
-                <div className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd</div>
+                <div className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd Kaas</div>
                 <h1 className="font-serif text-lg font-semibold text-white leading-tight">Cheese Stock Manager</h1>
               </div>
             </div>
@@ -82,6 +86,25 @@ export default async function DashboardPage() {
               <span className="text-inkSoft">›</span>
             </Link>
           ))}
+
+          {beheer.length > 0 && (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5 mt-4">Beheer</p>
+              {beheer.map((o) => (
+                <Link
+                  key={o.href}
+                  href={o.href}
+                  className="flex items-center justify-between rounded-2xl border-[1.5px] border-line bg-white p-3.5 mb-2.5"
+                >
+                  <div>
+                    <div className="text-sm font-semibold">{o.label}</div>
+                    <div className="text-xs text-inkSoft">{o.sub}</div>
+                  </div>
+                  <span className="text-inkSoft">›</span>
+                </Link>
+              ))}
+            </>
+          )}
         </div>
       </div>
 
@@ -89,7 +112,7 @@ export default async function DashboardPage() {
       <div className="hidden md:block md:px-10 md:py-10 md:max-w-6xl">
         <div className="flex items-start justify-between mb-8">
           <div>
-            <p className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd</p>
+            <p className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd Kaas</p>
             <h1 className="font-serif text-3xl font-semibold text-green">Hoofdscherm</h1>
           </div>
           <div className="text-right">
@@ -100,7 +123,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-4 gap-4 mb-4">
           {acties.map((t) => (
             <Link
               key={t.href}
@@ -113,7 +136,10 @@ export default async function DashboardPage() {
               <span className={`text-sm ${t.primary ? "text-white/80" : "text-inkSoft"}`}>{t.sub}</span>
             </Link>
           ))}
-          {overzichten.slice(0, 2).map((o) => (
+        </div>
+
+        <div className="grid grid-cols-4 gap-4 mb-10">
+          {overzichten.map((o) => (
             <Link
               key={o.href}
               href={o.href}
@@ -125,11 +151,11 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        {overzichten.length > 2 && (
+        {beheer.length > 0 && (
           <>
             <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-3">Beheer</p>
             <div className="grid grid-cols-4 gap-4">
-              {overzichten.slice(2).map((o) => (
+              {beheer.map((o) => (
                 <Link
                   key={o.href}
                   href={o.href}

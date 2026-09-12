@@ -10,13 +10,33 @@ export default function OntgrendelGate({ children }: { children: React.ReactNode
   const [ok, setOk] = useState(false);
 
   useEffect(() => {
-    if (sessionStorage.getItem(VLAG) === "1") {
-      setOk(true);
-    } else {
-      router.replace("/ontgrendel");
+    function controleer() {
+      if (sessionStorage.getItem(VLAG) === "1") {
+        setOk(true);
+      } else {
+        setOk(false);
+        router.replace("/ontgrendel");
+      }
     }
-    // Bewust geen dependency op pathname: dit hoeft maar één keer per
-    // "app-opening" gecontroleerd te worden, niet bij elke navigatie.
+
+    controleer();
+
+    // "Wegvegen" op mobiel (of naar de achtergrond zetten) beëindigt de
+    // pagina meestal niet echt — het toestel pauzeert 'm alleen, waardoor
+    // sessionStorage anders gewoon zou blijven bestaan bij terugkeer. Om dit
+    // toch als "opnieuw geopend" te laten voelen: zodra de app naar de
+    // achtergrond gaat, direct vergrendelen. Bij terugkeer moet dan sowieso
+    // opnieuw de pincode ingevoerd worden, ongeacht hoe kort dit was.
+    function bijZichtbaarheidVerandering() {
+      if (document.hidden) {
+        sessionStorage.removeItem(VLAG);
+      } else {
+        controleer();
+      }
+    }
+
+    document.addEventListener("visibilitychange", bijZichtbaarheidVerandering);
+    return () => document.removeEventListener("visibilitychange", bijZichtbaarheidVerandering);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -31,3 +51,4 @@ export function zetOntgrendeld() {
 export function wisOntgrendeld() {
   sessionStorage.removeItem(VLAG);
 }
+

@@ -29,7 +29,7 @@ export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
         <img src="/logo-emblem.png" alt="" className="h-8 w-auto" />
         <div>
           <div className="font-serif text-sm font-semibold text-green leading-tight">Cheese Stock</div>
-          <div className="text-[10px] uppercase tracking-wide text-inkSoft">Van Beek &amp; De Vreugd</div>
+          <div className="text-[10px] uppercase tracking-wide text-inkSoft">Van Beek &amp; De Vreugd Kaas</div>
         </div>
       </div>
 

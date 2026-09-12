@@ -8,7 +8,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Een build-fout in de pincode-API's opgelost (verwijzing naar verwijderde functie)."
+set "OMSCHRIJVING=Inslag/uitslag overzicht, rol wijzigen, bedrijfsnaam gecorrigeerd en vergrendelen bij wegvegen op mobiel."
 
 echo.
 echo Bestanden bijwerken in:

@@ -62,6 +62,25 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
     }
   }
 
+  async function wisselRol(g: Gebruiker, nieuweRol: Gebruiker["rol"]) {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/gebruikers/${g.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rol: nieuweRol }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Bijwerken mislukt");
+      setLijst((l) => l.map((x) => (x.id === g.id ? data.gebruiker : x)));
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function bevestigVerwijderen() {
     if (!teVerwijderen) return;
     setBusy(true);
@@ -129,8 +148,22 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
                 </button>
               </div>
               <div className="flex items-center justify-between">
-                <div className="text-xs text-inkSoft">
-                  {g.email} · {g.rol}
+                <div className="text-xs text-inkSoft flex items-center gap-1.5">
+                  <span>{g.email}</span>
+                  {g.id === huidigId ? (
+                    <span>· {g.rol}</span>
+                  ) : (
+                    <select
+                      value={g.rol}
+                      onChange={(e) => wisselRol(g, e.target.value as Gebruiker["rol"])}
+                      disabled={busy}
+                      className="border-0 bg-transparent text-xs text-inkSoft underline"
+                    >
+                      <option value="medewerker">medewerker</option>
+                      <option value="beheerder">beheerder</option>
+                      <option value="lezer">lezer</option>
+                    </select>
+                  )}
                 </div>
                 {g.id !== huidigId && (
                   <button onClick={() => setTeVerwijderen(g)} className="text-xs text-red-600 underline flex-shrink-0 ml-2">
@@ -160,7 +193,22 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
                   {g.naam} {g.id === huidigId && <span className="text-inkSoft font-normal">(jij)</span>}
                 </td>
                 <td className="py-3 pr-3 text-inkSoft">{g.email}</td>
-                <td className="py-3 pr-3 capitalize">{g.rol}</td>
+                <td className="py-3 pr-3">
+                  {g.id === huidigId ? (
+                    <span className="capitalize">{g.rol}</span>
+                  ) : (
+                    <select
+                      value={g.rol}
+                      onChange={(e) => wisselRol(g, e.target.value as Gebruiker["rol"])}
+                      disabled={busy}
+                      className="rounded-lg border-[1.5px] border-line px-2 py-1 text-xs"
+                    >
+                      <option value="medewerker">Medewerker</option>
+                      <option value="beheerder">Beheerder</option>
+                      <option value="lezer">Lezer</option>
+                    </select>
+                  )}
+                </td>
                 <td className="py-3 pr-3">
                   <button
                     onClick={() => wisselStatus(g)}

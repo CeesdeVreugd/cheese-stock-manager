@@ -7,7 +7,7 @@ import InstallBanner from "@/components/install-banner";
 
 export const metadata: Metadata = {
   title: "Cheese Stock Manager",
-  description: "Van Beek & De Vreugd — voorraadbeheer",
+  description: "Van Beek & De Vreugd Kaas — voorraadbeheer",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

@@ -44,8 +44,8 @@ export default function PincodeInstellenForm() {
   return (
     <div className="flex flex-col min-h-screen px-6 pt-10 pb-8">
       <div className="mb-8">
-        <img src="/logo-emblem.png" alt="Van Beek & De Vreugd" className="h-14 w-auto mb-3" />
-        <div className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd</div>
+        <img src="/logo-emblem.png" alt="Van Beek & De Vreugd Kaas" className="h-14 w-auto mb-3" />
+        <div className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd Kaas</div>
         <h1 className="font-serif text-2xl font-semibold text-green">Stel je pincode in</h1>
         <p className="text-sm text-inkSoft mt-2">
           Hiermee open je de app voortaan snel op dit toestel, zonder steeds een nieuwe e-mailcode. Om de

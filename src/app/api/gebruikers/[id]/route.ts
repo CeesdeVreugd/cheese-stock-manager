@@ -2,24 +2,44 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 
+const GELDIGE_ROLLEN = ["beheerder", "medewerker", "lezer"];
+
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   if (gebruiker.rol !== "beheerder") {
-    return NextResponse.json({ error: "Alleen een beheerder kan gebruikers (de)blokkeren" }, { status: 403 });
+    return NextResponse.json({ error: "Alleen een beheerder kan gebruikers aanpassen" }, { status: 403 });
   }
 
   const { id } = await params;
-  const { status } = await req.json();
-  if (!["actief", "geblokkeerd"].includes(status)) {
-    return NextResponse.json({ error: "Ongeldige status" }, { status: 400 });
+  const { status, rol } = await req.json();
+
+  const data: { status?: "actief" | "geblokkeerd"; rol?: "beheerder" | "medewerker" | "lezer" } = {};
+
+  if (status !== undefined) {
+    if (!["actief", "geblokkeerd"].includes(status)) {
+      return NextResponse.json({ error: "Ongeldige status" }, { status: 400 });
+    }
+    if (id === gebruiker.id && status === "geblokkeerd") {
+      return NextResponse.json({ error: "Je kunt jezelf niet blokkeren" }, { status: 400 });
+    }
+    data.status = status;
   }
 
-  if (id === gebruiker.id && status === "geblokkeerd") {
-    return NextResponse.json({ error: "Je kunt jezelf niet blokkeren" }, { status: 400 });
+  if (rol !== undefined) {
+    if (!GELDIGE_ROLLEN.includes(rol)) {
+      return NextResponse.json({ error: "Ongeldige rol" }, { status: 400 });
+    }
+    // Zelfde voorzichtigheidsprincipe als bij blokkeren: niet je eigen rol
+    // kunnen aanpassen, om te voorkomen dat je jezelf per ongeluk degradeert
+    // en zo de laatste beheerder buitensluit.
+    if (id === gebruiker.id) {
+      return NextResponse.json({ error: "Je kunt je eigen rol niet aanpassen" }, { status: 400 });
+    }
+    data.rol = rol;
   }
 
-  const bijgewerkt = await prisma.gebruiker.update({ where: { id }, data: { status } });
+  const bijgewerkt = await prisma.gebruiker.update({ where: { id }, data });
   return NextResponse.json({ gebruiker: bijgewerkt });
 }
 

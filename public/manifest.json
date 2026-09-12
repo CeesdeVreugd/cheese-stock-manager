@@ -1,7 +1,7 @@
 {
   "name": "Cheese Stock Manager",
   "short_name": "CheeseStock",
-  "description": "Van Beek & De Vreugd — voorraadbeheer",
+  "description": "Van Beek & De Vreugd Kaas — voorraadbeheer",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#FFFDF8",

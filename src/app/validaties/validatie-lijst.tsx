@@ -9,7 +9,7 @@ export default function ValidatieLijst({
   titel,
   initieel,
 }: {
-  soort: "productafkomst" | "proces" | "model";
+  soort: "productafkomst" | "proces" | "model" | "klant";
   titel: string;
   initieel: Item[];
 }) {

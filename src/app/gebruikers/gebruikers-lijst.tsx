@@ -27,6 +27,7 @@ export default function GebruikersLijst({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [teVerwijderen, setTeVerwijderen] = useState<Gebruiker | null>(null);
+  const [gereset, setGereset] = useState<string | null>(null);
 
   async function toevoegen(e: React.FormEvent) {
     e.preventDefault();
@@ -89,6 +90,27 @@ export default function GebruikersLijst({
     }
   }
 
+  async function resetPincode(g: Gebruiker) {
+    if (!confirm(`Pincode van ${g.naam} resetten? Die persoon moet dan overal opnieuw met e-mail inloggen.`)) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/gebruikers/${g.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resetPincode: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Resetten mislukt");
+      setGereset(g.naam);
+      setTimeout(() => setGereset(null), 3000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function bevestigVerwijderen() {
     if (!teVerwijderen) return;
     setBusy(true);
@@ -139,6 +161,11 @@ export default function GebruikersLijst({
       </form>
 
       <div className="flex-1 min-w-0">
+        {gereset && (
+          <p className="text-sm text-green mb-3 bg-greenSoft rounded-lg px-3 py-2">
+            Pincode van {gereset} gereset — die persoon moet nu opnieuw met e-mail inloggen.
+          </p>
+        )}
         {/* Mobiel: gestapelde kaartjes */}
         <div className="flex flex-col gap-2 md:hidden">
           {lijst.map((g) => (
@@ -157,7 +184,7 @@ export default function GebruikersLijst({
                   {g.status === "actief" ? "Actief" : "Geblokkeerd"}
                 </button>
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-1.5">
                 <div className="text-xs text-inkSoft flex items-center gap-1.5">
                   <span>{g.email}</span>
                   {g.id === huidigId ? (
@@ -177,8 +204,13 @@ export default function GebruikersLijst({
                     </select>
                   )}
                 </div>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <button onClick={() => resetPincode(g)} disabled={busy} className="text-xs text-goldDeep underline flex-shrink-0">
+                  pincode resetten
+                </button>
                 {g.id !== huidigId && (
-                  <button onClick={() => setTeVerwijderen(g)} className="text-xs text-red-600 underline flex-shrink-0 ml-2">
+                  <button onClick={() => setTeVerwijderen(g)} className="text-xs text-red-600 underline flex-shrink-0">
                     verwijderen
                   </button>
                 )}
@@ -188,7 +220,8 @@ export default function GebruikersLijst({
         </div>
 
         {/* Desktop: echte tabel */}
-        <table className="hidden md:table w-full text-sm border-collapse">
+        <div className="overflow-x-auto">
+        <table className="hidden md:table w-full text-sm border-collapse min-w-[700px]">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-inkSoft border-b border-line">
               <th className="py-2 pr-3 font-semibold">Naam</th>
@@ -235,16 +268,22 @@ export default function GebruikersLijst({
                   </button>
                 </td>
                 <td className="py-3 text-right">
-                  {g.id !== huidigId && (
-                    <button onClick={() => setTeVerwijderen(g)} className="text-xs text-red-600 underline">
-                      Verwijderen
+                  <div className="flex gap-2 justify-end">
+                    <button onClick={() => resetPincode(g)} disabled={busy} className="text-xs text-goldDeep underline">
+                      Pincode resetten
                     </button>
-                  )}
+                    {g.id !== huidigId && (
+                      <button onClick={() => setTeVerwijderen(g)} className="text-xs text-red-600 underline">
+                        Verwijderen
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {teVerwijderen && (

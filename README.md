@@ -110,6 +110,17 @@ Bij het heropenen van de app (zolang de browser niet volledig is afgesloten
 én de 2-wekelijkse sessie nog geldig is) volstaat die pincode. Na 2 weken, of
 na het volledig afsluiten van de browser, is een nieuwe e-mailcode nodig.
 
+## Activiteitenlog en pincode resetten
+
+Onder **Activiteiten** (beheerder-only) staat een doorzoekbaar logboek van
+inslag, uitslag, reserveringen en gebruikersbeheer — wie deed wat, en
+wanneer. Verstandig om af en toe te bekijken, vooral bij meerdere mensen met
+toegang.
+
+Bij **Gebruikers** kan een beheerder nu ook iemands pincode resetten (bv. bij
+een kwijtgeraakt of vervangen toestel) — die persoon moet dan bij de
+volgende app-opening weer volledig met e-mail + code inloggen.
+
 ## Wat hierna nog moet gebeuren (zie het technisch ontwerpdocument)
 
 - Labelprinten naar een fysieke printer (§7.1: Raspberry Pi-printstation of Zebra Browser Print) — de QR-code zelf wordt al gegenereerd en getoond (na inslag, en op elke box in de voorraadlijst)

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 
-const GELDIGE_SOORTEN = ["productafkomst", "proces", "model"] as const;
+const GELDIGE_SOORTEN = ["productafkomst", "proces", "model", "klant"] as const;
 type Soort = (typeof GELDIGE_SOORTEN)[number];
 
 function isGeldigSoort(waarde: string | null): waarde is Soort {

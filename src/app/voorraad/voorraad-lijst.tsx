@@ -108,7 +108,8 @@ export default function VoorraadLijst({ boxen, gereserveerdeBoxIds = [] }: { box
 
       {/* ---------- Desktop: tabel ---------- */}
       {gefilterd.length > 0 && (
-        <table className="hidden md:table w-full text-sm border-collapse bg-white rounded-2xl overflow-hidden border-[1.5px] border-line">
+        <div className="overflow-x-auto">
+        <table className="hidden md:table w-full text-sm border-collapse bg-white rounded-2xl overflow-hidden border-[1.5px] border-line min-w-[900px]">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-inkSoft bg-greenSoft">
               <th className="py-3 px-4 font-semibold">QR</th>
@@ -150,6 +151,7 @@ export default function VoorraadLijst({ boxen, gereserveerdeBoxIds = [] }: { box
             })}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import QrScanner from "@/components/qr-scanner";
+import BoxKiezer from "@/components/box-kiezer";
 
 type Box = {
   id: string;
@@ -19,46 +19,16 @@ function newTransactionId() {
   return crypto.randomUUID();
 }
 
-export default function UitslagForm() {
+export default function UitslagForm({ boxen }: { boxen: Box[] }) {
   const router = useRouter();
   const transactionId = useMemo(newTransactionId, []);
-  const [query, setQuery] = useState("");
   const [box, setBox] = useState<Box | null>(null);
-  const [searching, setSearching] = useState(false);
-  const [scanning, setScanning] = useState(false);
   const [uitslagType, setUitslagType] = useState<"volledig" | "klein">("volledig");
   const [aantalKazenUit, setAantalKazenUit] = useState("");
   const [tarief, setTarief] = useState<"standaard" | "geetiketteerd">("standaard");
   const [opmerking, setOpmerking] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  async function zoekOp(waarde: string) {
-    setSearching(true);
-    setError(null);
-    setBox(null);
-    try {
-      const res = await fetch(`/api/uitslag/search?q=${encodeURIComponent(waarde)}`);
-      const data = await res.json();
-      if (!data.box) throw new Error("Geen box gevonden met dat BoxID of die partijcode");
-      setBox(data.box);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSearching(false);
-    }
-  }
-
-  async function zoek(e: React.FormEvent) {
-    e.preventDefault();
-    await zoekOp(query);
-  }
-
-  function scanResultaat(waarde: string) {
-    setScanning(false);
-    setQuery(waarde);
-    zoekOp(waarde);
-  }
 
   async function bevestig(e: React.FormEvent) {
     e.preventDefault();
@@ -101,31 +71,11 @@ export default function UitslagForm() {
 
       <div className="flex-1 overflow-auto px-5 pb-6 md:px-8 flex flex-col gap-4">
         {!box && (
-          <form onSubmit={zoek} className="flex flex-col gap-3 md:max-w-md">
-            <p className="text-xs font-bold text-ink">Zoek op BoxID of partijcode</p>
-            <div className="flex gap-2">
-              <input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="input flex-1"
-                placeholder="bv. 12 of 0682600025"
-              />
-              <button disabled={searching} className="rounded-xl bg-green px-4 text-sm font-semibold text-white">
-                {searching ? "…" : "Zoek"}
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setScanning(true)}
-              className="w-full rounded-xl border-[1.5px] border-dashed border-goldDeep bg-goldSoft py-3 text-sm font-semibold text-goldDeep"
-            >
-              Scan QR-label
-            </button>
-          </form>
+          <>
+            <p className="text-xs font-bold text-ink">Kies een box</p>
+            <BoxKiezer boxen={boxen} onSelect={setBox} />
+          </>
         )}
-
-        {scanning && <QrScanner onResult={scanResultaat} onClose={() => setScanning(false)} />}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 

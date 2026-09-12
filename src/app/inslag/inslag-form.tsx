@@ -132,6 +132,7 @@ export default function InslagForm() {
         <Field label="Partijcode" hint="10 cijfers">
           <input
             required
+            inputMode="numeric"
             value={form.partijcode}
             onChange={(e) => update("partijcode", e.target.value.replace(/\D/g, "").slice(0, 10))}
             className="input"

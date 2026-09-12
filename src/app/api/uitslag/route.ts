@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
+import { logActiviteit } from "@/lib/audit";
 
 export async function POST(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
           aantalKazenUit: aantalUit,
           nettoGramUit: gramUit,
           opmerking: opmerking || null,
+          gebruikerId: gebruiker.id,
         },
       });
 
@@ -65,8 +67,16 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      return { herhaling: false };
+      return { herhaling: false, boxId: box.boxId, aantalUit };
     });
+
+    if (!result.herhaling) {
+      await logActiviteit(
+        gebruiker,
+        "Uitslag",
+        `Box #${result.boxId} — ${uitslagType} (${result.aantalUit} kazen, ${tarief})`
+      );
+    }
 
     return NextResponse.json({ ok: true, herhaling: result.herhaling });
   } catch (err: any) {

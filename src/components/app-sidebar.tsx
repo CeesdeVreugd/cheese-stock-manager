@@ -22,6 +22,14 @@ export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
   const pathname = usePathname();
   const { rol } = gebruiker;
 
+  // Als iemand bewust naar /login (of de andere auth-schermen) navigeert
+  // terwijl er toevallig nog een geldige sessie-cookie bestaat, moet de
+  // hoofdnavigatie zich daar niet mee bemoeien — dat oogt als een dubbel
+  // logo en overbodige tabs op een scherm dat juist "nog niet ingelogd"
+  // hoort te voelen.
+  const AUTH_ROUTES = ["/login", "/ontgrendel", "/pincode/instellen"];
+  if (AUTH_ROUTES.includes(pathname)) return null;
+
   const links = [
     { href: "/dashboard", label: "Hoofdscherm", mag: true },
     { href: "/inslag", label: "Inslag", mag: rol.canInslag },
@@ -37,6 +45,7 @@ export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
         { href: "/validaties", label: "Validatielijsten" },
         { href: "/gebruikers", label: "Gebruikers" },
         { href: "/rollen", label: "Rollen" },
+        { href: "/activiteiten", label: "Activiteiten" },
       ]
     : [];
 

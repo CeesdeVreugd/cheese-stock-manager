@@ -63,7 +63,8 @@ export default async function InslagOverzichtPage() {
           {regels.length === 0 ? (
             <p className="text-sm text-inkSoft">Nog geen inslag geregistreerd.</p>
           ) : (
-            <table className="w-full text-sm border-collapse bg-white rounded-2xl overflow-hidden border-[1.5px] border-line">
+            <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse bg-white rounded-2xl overflow-hidden border-[1.5px] border-line min-w-[900px]">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-inkSoft bg-greenSoft">
                   <th className="py-3 px-4 font-semibold">Partijcode</th>
@@ -93,6 +94,7 @@ export default async function InslagOverzichtPage() {
                 ))}
               </tbody>
             </table>
+        </div>
           )}
         </div>
       </div>

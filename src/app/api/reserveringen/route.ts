@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
+import { logActiviteit } from "@/lib/audit";
 
 export async function GET(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
@@ -52,6 +53,12 @@ export async function POST(req: NextRequest) {
     },
     include: { gebruiker: { select: { naam: true } } },
   });
+
+  await logActiviteit(
+    gebruiker,
+    "Reservering",
+    `Box #${box.boxId} gereserveerd (${volledigeBox ? "hele box" : `${aantalKazen} kazen`})${klant ? ` voor ${klant}` : ""}`
+  );
 
   return NextResponse.json({ reservering });
 }

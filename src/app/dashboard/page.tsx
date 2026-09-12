@@ -33,6 +33,7 @@ export default async function DashboardPage() {
           { href: "/validaties", label: "Validatielijsten", sub: "Productafkomst, proces, model" },
           { href: "/gebruikers", label: "Gebruikers", sub: "Aanmaken, rol en toegang" },
           { href: "/rollen", label: "Rollen", sub: "Rechten per rol instellen" },
+          { href: "/activiteiten", label: "Activiteiten", sub: "Wie deed wanneer wat" },
         ]
       : [];
 

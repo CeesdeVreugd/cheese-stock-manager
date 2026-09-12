@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
+import { logActiviteit } from "@/lib/audit";
 
 export async function GET() {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
@@ -43,6 +44,8 @@ export async function POST(req: NextRequest) {
     data: { naam: naam.trim(), email: email.trim().toLowerCase(), rolId },
     include: { rol: true },
   });
+
+  await logActiviteit(gebruiker, "Gebruiker", `${nieuw.naam} (${nieuw.email}) aangemaakt met rol ${nieuw.rol?.naam}`);
 
   return NextResponse.json({ gebruiker: nieuw });
 }

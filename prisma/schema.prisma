@@ -55,6 +55,8 @@ model Gebruiker {
 
   loginCodes     LoginCode[]
   devicePincodes DevicePincode[]
+  inslagLogs     InslagLog[] @relation("InslagDoor")
+  uitslagLogs    UitslagLog[] @relation("UitslagDoor")
   reserveringen  Reservering[]
 }
 
@@ -112,6 +114,8 @@ model InslagLog {
   nettoGram      Int
   opmerking      String?
   inslagtijd     DateTime @default(now())
+  gebruiker      Gebruiker? @relation("InslagDoor", fields: [gebruikerId], references: [id], onDelete: SetNull)
+  gebruikerId    String?
 }
 
 model UitslagLog {
@@ -129,6 +133,8 @@ model UitslagLog {
   nettoGramUit   Int
   opmerking      String?
   uitslagtijd    DateTime      @default(now())
+  gebruiker      Gebruiker?    @relation("UitslagDoor", fields: [gebruikerId], references: [id], onDelete: SetNull)
+  gebruikerId    String?
 }
 
 // Dagelijkse aggregatie, zie §3.3 (basis voor kg-dagen-opslagberekening)
@@ -151,6 +157,7 @@ enum ValidatieSoort {
   productafkomst
   proces
   model
+  klant
 }
 
 model ValidatieItem {
@@ -183,4 +190,18 @@ model Reservering {
   gebruiker       Gebruiker         @relation(fields: [gebruikerId], references: [id])
   gebruikerId     String
   createdAt       DateTime          @default(now())
+}
+
+// Activiteitenlog voor het "wie deed wat, wanneer"-overzicht. Bewust met
+// een losse naam/e-mail-snapshot i.p.v. een verplichte koppeling naar
+// Gebruiker: als een gebruiker later verwijderd wordt, blijft de
+// geschiedenis toch leesbaar (zie ook §9 audit-opmerking in het
+// ontwerpdocument).
+model AuditLog {
+  id             String   @id @default(uuid())
+  gebruikerNaam  String
+  gebruikerEmail String
+  actie          String
+  omschrijving   String
+  createdAt      DateTime @default(now())
 }

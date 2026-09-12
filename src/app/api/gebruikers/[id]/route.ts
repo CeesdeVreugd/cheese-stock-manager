@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
+import { logActiviteit } from "@/lib/audit";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
@@ -10,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const { status, rolId } = await req.json();
+  const { status, rolId, resetPincode } = await req.json();
 
   const data: { status?: "actief" | "geblokkeerd"; rolId?: string } = {};
 
@@ -38,7 +39,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.rolId = rolId;
   }
 
-  const bijgewerkt = await prisma.gebruiker.update({ where: { id }, data, include: { rol: true } });
+  let bijgewerkt = await prisma.gebruiker.update({ where: { id }, data, include: { rol: true } });
+
+  if (status !== undefined) {
+    await logActiviteit(gebruiker, "Gebruiker", `${bijgewerkt.naam} op status "${status}" gezet`);
+  }
+  if (rolId !== undefined) {
+    await logActiviteit(gebruiker, "Gebruiker", `Rol van ${bijgewerkt.naam} gewijzigd naar ${bijgewerkt.rol?.naam}`);
+  }
+
+  // Beheerder-actie: forceert dat deze gebruiker overal opnieuw met e-mail +
+  // code moet inloggen (§4.3) — bijvoorbeeld bij een vermoedelijk
+  // zoekgeraakt toestel. Verwijdert alle opgeslagen pincodes van deze
+  // gebruiker; de eerstvolgende "ontgrendelen"-poging vindt dan niets meer
+  // en stuurt vanzelf door naar de volledige inlogflow.
+  if (resetPincode === true) {
+    await prisma.devicePincode.deleteMany({ where: { gebruikerId: id } });
+    await logActiviteit(gebruiker, "Gebruiker", `Pincode van ${bijgewerkt.naam} gereset`);
+  }
+
   return NextResponse.json({ gebruiker: bijgewerkt });
 }
 
@@ -54,11 +73,18 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Je kunt jezelf niet verwijderen" }, { status: 400 });
   }
 
+  const teVerwijderen = await prisma.gebruiker.findUnique({ where: { id } });
+
   // Bestaande logincodes/pincodes van deze gebruiker worden meeverwijderd
   // (onDelete: Cascade in het schema). Inslag/uitslag-historie blijft
-  // gewoon bestaan — daar staat geen koppeling naar de gebruiker in, alleen
-  // wát er is gebeurd, niet wie precies (zie §9 audit-opmerking).
+  // gewoon bestaan (gebruikerId wordt daar leeggemaakt, zie onDelete:
+  // SetNull) — het activiteitenlog zelf blijft sowieso leesbaar, want dat
+  // bewaart naam/e-mail apart, niet als koppeling (zie §9 audit-opmerking).
   await prisma.gebruiker.delete({ where: { id } });
+
+  if (teVerwijderen) {
+    await logActiviteit(gebruiker, "Gebruiker", `${teVerwijderen.naam} (${teVerwijderen.email}) verwijderd`);
+  }
 
   return NextResponse.json({ ok: true });
 }

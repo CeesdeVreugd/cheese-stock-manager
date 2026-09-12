@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import QrScanner from "@/components/qr-scanner";
+import BoxKiezer from "@/components/box-kiezer";
 
 type Box = {
   id: string;
@@ -15,20 +15,19 @@ type Box = {
   nettoGram: number;
 };
 
-type BestaandeReservering = {
-  id: string;
-  volledigeBox: boolean;
-  aantalKazen: number | null;
-  klant: string | null;
-} | null;
+type Klant = { id: string; naam: string };
 
-export default function ReserverenForm() {
+export default function ReserverenForm({
+  boxen,
+  klanten,
+  gereserveerdeBoxIds,
+}: {
+  boxen: Box[];
+  klanten: Klant[];
+  gereserveerdeBoxIds: number[];
+}) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
   const [box, setBox] = useState<Box | null>(null);
-  const [bestaande, setBestaande] = useState<BestaandeReservering>(null);
-  const [searching, setSearching] = useState(false);
-  const [scanning, setScanning] = useState(false);
   const [volledigeBox, setVolledigeBox] = useState(true);
   const [aantalKazen, setAantalKazen] = useState("");
   const [klant, setKlant] = useState("");
@@ -36,35 +35,6 @@ export default function ReserverenForm() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gelukt, setGelukt] = useState(false);
-
-  async function zoekOp(waarde: string) {
-    setSearching(true);
-    setError(null);
-    setBox(null);
-    setBestaande(null);
-    try {
-      const res = await fetch(`/api/reserveringen/zoek-box?q=${encodeURIComponent(waarde)}`);
-      const data = await res.json();
-      if (!data.box) throw new Error("Geen box gevonden met dat BoxID of die partijcode");
-      setBox(data.box);
-      setBestaande(data.bestaandeReservering || null);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setSearching(false);
-    }
-  }
-
-  async function zoek(e: React.FormEvent) {
-    e.preventDefault();
-    await zoekOp(query);
-  }
-
-  function scanResultaat(waarde: string) {
-    setScanning(false);
-    setQuery(waarde);
-    zoekOp(waarde);
-  }
 
   async function bevestig(e: React.FormEvent) {
     e.preventDefault();
@@ -86,6 +56,7 @@ export default function ReserverenForm() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Reserveren mislukt");
       setGelukt(true);
+      router.refresh();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -95,8 +66,6 @@ export default function ReserverenForm() {
 
   function nieuweReservering() {
     setBox(null);
-    setBestaande(null);
-    setQuery("");
     setVolledigeBox(true);
     setAantalKazen("");
     setKlant("");
@@ -137,31 +106,11 @@ export default function ReserverenForm() {
         )}
 
         {!gelukt && !box && (
-          <form onSubmit={zoek} className="flex flex-col gap-3 md:max-w-md">
-            <p className="text-xs font-bold text-ink">Zoek op BoxID of partijcode</p>
-            <div className="flex gap-2">
-              <input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="input flex-1"
-                placeholder="bv. 12 of 0682600025"
-              />
-              <button disabled={searching} className="rounded-xl bg-green px-4 text-sm font-semibold text-white">
-                {searching ? "…" : "Zoek"}
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => setScanning(true)}
-              className="w-full rounded-xl border-[1.5px] border-dashed border-goldDeep bg-goldSoft py-3 text-sm font-semibold text-goldDeep"
-            >
-              Scan QR-label
-            </button>
-          </form>
+          <>
+            <p className="text-xs font-bold text-ink">Kies een box</p>
+            <BoxKiezer boxen={boxen} onSelect={setBox} gereserveerdeBoxIds={gereserveerdeBoxIds} />
+          </>
         )}
-
-        {scanning && <QrScanner onResult={scanResultaat} onClose={() => setScanning(false)} />}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -186,12 +135,6 @@ export default function ReserverenForm() {
                   {box.aantalKazen} stuks · {(box.nettoGram / 1000).toFixed(1)} kg
                 </div>
               </div>
-              {bestaande && (
-                <div className="mt-3 rounded-lg bg-goldSoft p-2.5 text-xs text-goldDeep">
-                  Let op: deze box heeft al een openstaande reservering
-                  {bestaande.klant ? ` (voor ${bestaande.klant})` : ""}.
-                </div>
-              )}
             </div>
 
             <div className="min-w-0 flex flex-col gap-4">
@@ -236,8 +179,23 @@ export default function ReserverenForm() {
               )}
 
               <div>
-                <label className="block text-xs font-bold text-ink mb-1.5">Klant / bestemming (optioneel)</label>
-                <input value={klant} onChange={(e) => setKlant(e.target.value)} className="input" placeholder="Groothandel..." />
+                <label className="block text-xs font-bold text-ink mb-1.5">Klant / bestemming</label>
+                <select value={klant} onChange={(e) => setKlant(e.target.value)} className="input">
+                  <option value="">Geen / onbekend</option>
+                  {klanten.map((k) => (
+                    <option key={k.id} value={k.naam}>
+                      {k.naam}
+                    </option>
+                  ))}
+                </select>
+                {klanten.length === 0 && (
+                  <p className="text-[11px] text-inkSoft mt-1">
+                    Nog geen klanten ingesteld —{" "}
+                    <Link href="/validaties" className="underline">
+                      beheer validatielijsten
+                    </Link>
+                  </p>
+                )}
               </div>
 
               <div>

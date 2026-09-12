@@ -19,10 +19,11 @@ export default async function ValidatiesPage() {
     );
   }
 
-  const [productafkomst, proces, model] = await Promise.all([
+  const [productafkomst, proces, model, klant] = await Promise.all([
     prisma.validatieItem.findMany({ where: { soort: "productafkomst", actief: true }, orderBy: { naam: "asc" } }),
     prisma.validatieItem.findMany({ where: { soort: "proces", actief: true }, orderBy: { naam: "asc" } }),
     prisma.validatieItem.findMany({ where: { soort: "model", actief: true }, orderBy: { naam: "asc" } }),
+    prisma.validatieItem.findMany({ where: { soort: "klant", actief: true }, orderBy: { naam: "asc" } }),
   ]);
 
   return (
@@ -41,13 +42,14 @@ export default async function ValidatiesPage() {
             <ValidatieLijst soort="productafkomst" titel="Productafkomst" initieel={productafkomst} />
             <ValidatieLijst soort="proces" titel="Proces" initieel={proces} />
             <ValidatieLijst soort="model" titel="Model" initieel={model} />
+            <ValidatieLijst soort="klant" titel="Klant / bestemming" initieel={klant} />
           </div>
         </div>
 
-        {/* ---------- Desktop: drie kolommen naast elkaar ---------- */}
+        {/* ---------- Desktop: vier kolommen naast elkaar ---------- */}
         <div className="hidden md:block md:px-10 md:py-10 md:max-w-6xl">
           <h1 className="font-serif text-3xl font-semibold text-green mb-6">Validatielijsten</h1>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-4 gap-6">
             <div className="rounded-2xl border-[1.5px] border-line bg-white p-5">
               <ValidatieLijst soort="productafkomst" titel="Productafkomst" initieel={productafkomst} />
             </div>
@@ -56,6 +58,9 @@ export default async function ValidatiesPage() {
             </div>
             <div className="rounded-2xl border-[1.5px] border-line bg-white p-5">
               <ValidatieLijst soort="model" titel="Model" initieel={model} />
+            </div>
+            <div className="rounded-2xl border-[1.5px] border-line bg-white p-5">
+              <ValidatieLijst soort="klant" titel="Klant / bestemming" initieel={klant} />
             </div>
           </div>
         </div>

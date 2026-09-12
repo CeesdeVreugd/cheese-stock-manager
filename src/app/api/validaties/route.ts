@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionGebruiker } from "@/lib/auth";
+import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 
 const GELDIGE_SOORTEN = ["productafkomst", "proces", "model"] as const;
 type Soort = (typeof GELDIGE_SOORTEN)[number];
@@ -10,7 +10,7 @@ function isGeldigSoort(waarde: string | null): waarde is Soort {
 }
 
 export async function GET(req: NextRequest) {
-  const gebruiker = await getSessionGebruiker();
+  const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const soort = req.nextUrl.searchParams.get("soort");
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const gebruiker = await getSessionGebruiker();
+  const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   // Rolcontrole server-side (§4.4), niet alleen door de knop te verbergen
   if (gebruiker.rol !== "beheerder") {

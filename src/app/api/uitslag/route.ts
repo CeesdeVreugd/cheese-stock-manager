@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionGebruikerId } from "@/lib/auth";
+import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const gebruikerId = await getSessionGebruikerId();
-  if (!gebruikerId) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
+  const gebruiker = await vereisOntgrendeldeGebruikerApi();
+  if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const body = await req.json();
   const { transactionId, boxId, uitslagType, tarief, aantalKazenUit, opmerking } = body;

@@ -1,16 +1,14 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSessionGebruikerId } from "@/lib/auth";
+import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function VoorraadPage() {
-  const gebruikerId = await getSessionGebruikerId();
-  if (!gebruikerId) redirect("/login");
+  await vereisOntgrendeldeGebruiker();
 
   const boxen = await prisma.box.findMany({ orderBy: { createdAt: "desc" } });
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-2xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-6 pb-3">
         <Link href="/dashboard" className="text-sm font-semibold text-green">
           ‹ Terug

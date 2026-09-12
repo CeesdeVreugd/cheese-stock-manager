@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { hashValue, setSessionCookie } from "@/lib/auth";
+import { hashValue, setSessionCookie, ensureDeviceId } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   const { email, code } = await req.json();
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
   });
 
   await setSessionCookie(gebruiker.id);
+  await ensureDeviceId();
 
   return NextResponse.json({ ok: true });
 }

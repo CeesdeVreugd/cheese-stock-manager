@@ -8,7 +8,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Het standaard e-maildomein gecorrigeerd naar beekvreugdkaas.nl."
+set "OMSCHRIJVING=Rond app-icoon, pincode-ontgrendeling en een bredere desktopindeling voor het hoofdscherm toegevoegd."
 
 echo.
 echo Bestanden bijwerken in:

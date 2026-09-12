@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSessionGebruikerId } from "@/lib/auth";
+import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/facturatie";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -10,8 +9,7 @@ export default async function FacturatiePage({
 }: {
   searchParams: Promise<{ week?: string }>;
 }) {
-  const gebruikerId = await getSessionGebruikerId();
-  if (!gebruikerId) redirect("/login");
+  await vereisOntgrendeldeGebruiker();
 
   const { week } = await searchParams;
   const generatieDatum = week ? new Date(week) : huidigeGeneratieDatum();
@@ -38,7 +36,7 @@ export default async function FacturatiePage({
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-2xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
       <div className="bg-green px-6 pt-8 pb-6 rounded-b-3xl">
         <div className="flex items-center justify-between mb-1">
           <Link href="/dashboard" className="text-sm font-semibold text-white/80">

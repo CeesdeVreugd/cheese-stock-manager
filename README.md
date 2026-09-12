@@ -83,17 +83,24 @@ toont de app een korte instructie om het via Delen → "Zet op beginscherm" te
 doen.
 
 Op schermen vanaf tabletformaat (breder dan ca. 768px) verschijnt een vaste
-zijbalk met navigatie en staat de inhoud als gecentreerde kaart in beeld,
-zodat het er op een pc niet als een uitgerekte telefoonpagina uitziet. Op
-telefoonformaat blijft het de vertrouwde, volledige-breedte "app"-ervaring.
+zijbalk met navigatie. Het hoofdscherm heeft een eigen, brede desktop-indeling;
+de overige schermen tonen op desktop voorlopig een gecentreerd paneel (een
+volledig eigen brede indeling per scherm is een logische vervolgstap).
 Uitloggen kan zowel op het mobiele hoofdscherm als in de desktop-zijbalk.
+
+## Inloggen met pincode (§4.3)
+
+Na de eerste volledige login (e-mail + code) wordt om een pincode gevraagd.
+Bij het heropenen van de app (zolang de browser niet volledig is afgesloten
+én de 2-wekelijkse sessie nog geldig is) volstaat die pincode. Na 2 weken, of
+na het volledig afsluiten van de browser, is een nieuwe e-mailcode nodig.
 
 ## Wat hierna nog moet gebeuren (zie het technisch ontwerpdocument)
 
 - Labelprinten naar een fysieke printer (§7.1: Raspberry Pi-printstation of Zebra Browser Print) — de QR-code zelf wordt al gegenereerd en getoond (na inslag, en op elke box in de voorraadlijst)
 - Geplande (cron) taak die de facturatie automatisch elke donderdag klaarzet, i.p.v. nu op-aanvraag berekend — zie §8.1 over de afhankelijkheid met de dagsnapshot
 - Rollen/rechten verder afdwingen per scherm (nu zijn Validatielijsten en Gebruikers beheerder-only; de rest is gelijk voor iedere ingelogde gebruiker)
-- App-pincode voor snelle her-toegang (§4.3) — nu alleen de volledige e-mail+code-login gebouwd
+- Een volledig eigen, brede desktop-indeling voor Inslag/Uitslag/Voorraad/Facturatie/Validatielijsten/Gebruikers (nu nog een gecentreerd paneel; het hoofdscherm heeft al wel zijn eigen brede indeling)
 - Overstap van gratis tiers naar betaalde tiers zodra dit meer dan een proef is
   (zie §11 van het ontwerpdocument voor de kosteninschatting)
 

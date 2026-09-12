@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionGebruiker } from "@/lib/auth";
+import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 
 const GELDIGE_ROLLEN = ["beheerder", "medewerker", "lezer"] as const;
 
 export async function GET() {
-  const gebruiker = await getSessionGebruiker();
+  const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   if (gebruiker.rol !== "beheerder") {
     return NextResponse.json({ error: "Alleen een beheerder kan gebruikers beheren" }, { status: 403 });
@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const gebruiker = await getSessionGebruiker();
+  const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   // Rolcontrole server-side (§4.1/§4.4) — een nieuwe gebruiker aanmaken is
   // een beheerder-actie, geen self-service registratie.

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSessionGebruikerId } from "@/lib/auth";
+import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/facturatie";
 
 export async function GET(req: NextRequest) {
-  const gebruikerId = await getSessionGebruikerId();
-  if (!gebruikerId) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
+  const gebruiker = await vereisOntgrendeldeGebruikerApi();
+  if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
 
   const weekParam = req.nextUrl.searchParams.get("week");
   const generatieDatum = weekParam ? new Date(weekParam) : huidigeGeneratieDatum();

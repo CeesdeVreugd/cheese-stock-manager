@@ -36,22 +36,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="bg-cream text-ink font-sans">
         <RegisterSW />
         {/*
-          Twee indelingen in één schil:
+          Twee écht verschillende indelingen, geen uitgerekte telefoonpagina:
           - Mobiel (< md): volle breedte, één kolom — de vertrouwde "telefoon-app"-flow.
-          - Desktop (>= md): een vaste zijbalk met navigatie, en de inhoud als
-            een gecentreerde kaart — zodat het op een groot scherm niet als
-            een uitgerekte telefoon-pagina oogt, maar wel dezelfde schermen/
-            functionaliteit gebruikt.
+          - Desktop (>= md): een vaste zijbalk met navigatie, en de inhoud
+            gebruikt de volledige resterende breedte. Elke pagina bepaalt zelf
+            hoe die breedte wordt ingevuld (bv. het hoofdscherm met een brede
+            tegel-indeling), in plaats van overal dezelfde smalle kaart te tonen.
         */}
-        <div className="md:flex md:min-h-screen md:justify-center">
+        <div className="md:flex md:min-h-screen">
           {gebruiker && (
             <AppSidebar gebruiker={{ naam: gebruiker.naam, email: gebruiker.email, rol: gebruiker.rol }} />
           )}
-          <div className="md:flex md:flex-1 md:justify-center md:items-start md:py-10">
-            <div className="w-full max-w-md mx-auto md:mx-0 min-h-screen md:min-h-0 bg-cream md:rounded-3xl md:shadow-xl md:border md:border-line md:overflow-hidden">
-              <InstallBanner />
-              {children}
-            </div>
+          <div className="md:flex-1 md:min-w-0">
+            <InstallBanner />
+            {children}
           </div>
         </div>
       </body>

@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSessionGebruikerId } from "@/lib/auth";
+import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 
 export default async function InslagSuccesPage({
   searchParams,
 }: {
   searchParams: Promise<{ boxId?: string }>;
 }) {
-  const gebruikerId = await getSessionGebruikerId();
-  if (!gebruikerId) redirect("/login");
+  await vereisOntgrendeldeGebruiker();
 
   const { boxId } = await searchParams;
   if (!boxId) redirect("/dashboard");

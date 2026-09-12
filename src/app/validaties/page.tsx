@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { getSessionGebruiker } from "@/lib/auth";
+import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ValidatieLijst from "./validatie-lijst";
 
 export default async function ValidatiesPage() {
-  const gebruiker = await getSessionGebruiker();
-  if (!gebruiker) redirect("/login");
+  const gebruiker = await vereisOntgrendeldeGebruiker();
   if (gebruiker.rol !== "beheerder") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
@@ -27,7 +25,7 @@ export default async function ValidatiesPage() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-2xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-6 pb-3">
         <Link href="/dashboard" className="text-sm font-semibold text-green">
           ‹ Terug

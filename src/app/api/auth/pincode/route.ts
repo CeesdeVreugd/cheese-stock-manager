@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionGebruikerId, ensureDeviceId, hashValue, setUnlockedCookie } from "@/lib/auth";
+import { getSessionGebruikerId, ensureDeviceId, hashValue } from "@/lib/auth";
 
 const SESSIE_DAGEN = 14;
 
@@ -24,7 +24,9 @@ export async function POST(req: NextRequest) {
     create: { gebruikerId, deviceId, pincodeHash: hashValue(pincode), sessieVerlooptOp },
   });
 
-  await setUnlockedCookie(gebruikerId);
+  // Het echte "ontgrendelen" (sessionStorage-vlag) gebeurt client-side na
+  // deze response — zie components/ontgrendel-gate.tsx. De server hoeft hier
+  // niets voor bij te houden.
 
   return NextResponse.json({ ok: true });
 }

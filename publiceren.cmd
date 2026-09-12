@@ -8,7 +8,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Pincode-bug opgelost, gebruikers echt verwijderen, en een eigen brede desktopindeling voor alle schermen."
+set "OMSCHRIJVING=Een build-fout in de pincode-API's opgelost (verwijzing naar verwijderde functie)."
 
 echo.
 echo Bestanden bijwerken in:

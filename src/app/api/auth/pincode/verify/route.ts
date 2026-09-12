@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionGebruikerId, getDeviceIdReadOnly, hashValue, setUnlockedCookie } from "@/lib/auth";
+import { getSessionGebruikerId, getDeviceIdReadOnly, hashValue } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
   const gebruikerId = await getSessionGebruikerId();
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ONJUIST", message: "Onjuiste pincode." }, { status: 401 });
   }
 
-  await setUnlockedCookie(gebruikerId);
+  // Het echte "ontgrendelen" (sessionStorage-vlag) gebeurt client-side na
+  // deze response — zie components/ontgrendel-gate.tsx.
   return NextResponse.json({ ok: true });
 }

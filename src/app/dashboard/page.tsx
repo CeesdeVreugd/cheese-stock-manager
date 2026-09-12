@@ -2,6 +2,7 @@ import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import UitloggenKnop from "@/components/uitloggen-knop";
+import OntgrendelGate from "@/components/ontgrendel-gate";
 
 export default async function DashboardPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
@@ -29,6 +30,7 @@ export default async function DashboardPage() {
   ];
 
   return (
+    <OntgrendelGate>
     <div className="min-h-screen">
       {/* ---------- Mobiel ---------- */}
       <div className="md:hidden">
@@ -142,5 +144,6 @@ export default async function DashboardPage() {
         )}
       </div>
     </div>
+    </OntgrendelGate>
   );
 }

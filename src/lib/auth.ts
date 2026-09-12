@@ -99,40 +99,27 @@ export async function ensureDeviceId(): Promise<string> {
 }
 
 // ---------- Ontgrendel-status (pincode, §4.3) ----------
-// Dit is bewust een "session cookie" zonder maxAge: die vervalt zodra de
-// browser echt wordt afgesloten, zodat een nieuwe app-opening weer om de
-// pincode vraagt — zonder dat de onderliggende 2-wekelijkse login-sessie
-// (hierboven) daarvoor opnieuw hoeft.
+// Belangrijk: dit wordt NIET meer via een cookie bijgehouden. Een cookie
+// zonder vervaldatum ("session cookie") blijkt in de praktijk onbetrouwbaar
+// bij "sluit de browser" — Chrome kan achtergrond-apps laten doordraaien,
+// geïnstalleerde PWA's en mobiel sessieherstel laten zo'n cookie vaak gewoon
+// bestaan. In plaats daarvan zet de client (na een geslaagde pincode-invoer)
+// een vlag in sessionStorage, wat wél betrouwbaar leeg is bij een echte
+// herstart. Zie components/ontgrendel-gate.tsx voor de client-side check.
+//
+// Dit betekent ook: de pincode is een gebruiksvriendelijke vergrendeling
+// bovenop een al geldige sessie, geen extra API-beveiligingslaag — de API's
+// blijven beschermd door de gewone 2-wekelijkse sessie hieronder.
 
-export async function setUnlockedCookie(gebruikerId: string) {
-  const store = await cookies();
-  store.set(UNLOCK_COOKIE, `${gebruikerId}.${sign(gebruikerId)}`, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    // Geen maxAge/expires: vervalt bij het sluiten van de browser.
-  });
-}
-
-async function isOntgrendeld(gebruikerId: string): Promise<boolean> {
-  const store = await cookies();
-  const token = store.get(UNLOCK_COOKIE)?.value;
-  if (!token) return false;
-  const [id, handtekening] = token.split(".");
-  return id === gebruikerId && sign(gebruikerId) === handtekening;
-}
-
-// Voor Server Component-pagina's: redirect zelf bij ontbrekende/ongeldige
-// sessie of pincode-ontgrendeling. Geeft de volledige gebruiker terug.
+// Voor Server Component-pagina's: redirect zelf bij een ontbrekende/verlopen
+// sessie, of bij een geblokkeerde gebruiker. Geeft de volledige gebruiker
+// terug. De pincode-controle zelf gebeurt client-side, zie OntgrendelGate.
 export async function vereisOntgrendeldeGebruiker() {
   const gebruikerId = await getSessionGebruikerId();
   if (!gebruikerId) redirect("/login");
 
   const gebruiker = await prisma.gebruiker.findUnique({ where: { id: gebruikerId! } });
   if (!gebruiker || gebruiker.status !== "actief") redirect("/login");
-
-  if (!(await isOntgrendeld(gebruikerId!))) redirect("/ontgrendel");
 
   return gebruiker;
 }
@@ -146,8 +133,6 @@ export async function vereisOntgrendeldeGebruikerApi() {
 
   const gebruiker = await prisma.gebruiker.findUnique({ where: { id: gebruikerId } });
   if (!gebruiker || gebruiker.status !== "actief") return null;
-
-  if (!(await isOntgrendeld(gebruikerId))) return null;
 
   return gebruiker;
 }

@@ -4,10 +4,22 @@
 
 @layer components {
   .input {
-    @apply w-full rounded-xl border-[1.5px] border-line px-3.5 py-3 text-sm bg-white;
+    @apply w-full rounded-xl border-[1.5px] border-line px-3.5 py-3 text-base bg-white;
   }
 }
 
 body {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Voorkomt dat mobiele browsers (vooral iOS Safari) automatisch inzoomen
+   zodra een invoerveld focus krijgt — dat gebeurt zodra de tekstgrootte
+   van het veld kleiner is dan 16px. Alleen op mobiel, zodat eventuele
+   kleinere tekst op desktop-formulieren met opzet klein kan blijven. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }

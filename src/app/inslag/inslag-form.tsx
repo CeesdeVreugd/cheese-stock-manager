@@ -69,17 +69,17 @@ export default function InslagForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-2xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-6 pb-3">
+    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-3xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
+      <div className="flex items-center justify-between px-4 pt-6 pb-3 md:px-8">
         <Link href="/dashboard" className="text-sm font-semibold text-green">
           ‹ Terug
         </Link>
-        <h1 className="font-serif font-semibold text-green">Inslag</h1>
+        <h1 className="font-serif font-semibold text-green md:text-lg">Inslag</h1>
         <div className="w-12" />
       </div>
 
-      <form onSubmit={submit} className="flex-1 overflow-auto px-5 pb-6 flex flex-col gap-4">
-        <div className="flex gap-2.5">
+      <form onSubmit={submit} className="flex-1 overflow-auto px-5 pb-6 md:px-8 grid grid-cols-1 md:grid-cols-2 gap-4 content-start">
+        <div className="flex gap-2.5 md:col-span-2">
           <div className="flex-1 rounded-xl bg-greenSoft p-3">
             <div className="text-[10px] font-bold text-inkSoft">BOXID</div>
             <div className="text-sm font-semibold text-green">Wordt toegewezen bij opslaan</div>
@@ -167,16 +167,16 @@ export default function InslagForm() {
             placeholder="0,0"
           />
         </Field>
-        <Field label="Opmerking (optioneel)">
+        <Field label="Opmerking (optioneel)" className="md:col-span-2">
           <textarea value={form.opmerking} onChange={(e) => update("opmerking", e.target.value)} className="input h-20" />
         </Field>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-red-600 md:col-span-2">{error}</p>}
 
-        <button disabled={busy} className="mt-2 w-full rounded-xl bg-gold py-3.5 font-bold text-white shadow-md disabled:opacity-60">
+        <button disabled={busy} className="mt-2 w-full rounded-xl bg-gold py-3.5 font-bold text-white shadow-md disabled:opacity-60 md:col-span-2">
           {busy ? "Opslaan…" : "Opslaan"}
         </button>
-        <p className="text-center text-[11px] text-inkSoft">
+        <p className="text-center text-[11px] text-inkSoft md:col-span-2">
           Labelprinten (§7 van het ontwerpdocument) volgt in een volgende stap
         </p>
       </form>
@@ -184,9 +184,19 @@ export default function InslagForm() {
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  hint,
+  className,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div>
+    <div className={className}>
       <label className="block text-xs font-bold text-ink mb-1.5">{label}</label>
       {children}
       {hint && <p className="text-[11px] text-inkSoft mt-1">{hint}</p>}

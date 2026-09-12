@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { zetOntgrendeld } from "@/components/ontgrendel-gate";
 
 export default function OntgrendelForm() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function OntgrendelForm() {
         }
         throw new Error(data.message || "Onjuiste pincode");
       }
+      zetOntgrendeld();
       router.push("/dashboard");
       router.refresh();
     } catch (err: any) {

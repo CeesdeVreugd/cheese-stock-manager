@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
+import OntgrendelGate from "@/components/ontgrendel-gate";
 
 export default async function InslagSuccesPage({
   searchParams,
@@ -13,6 +14,7 @@ export default async function InslagSuccesPage({
   if (!boxId) redirect("/dashboard");
 
   return (
+    <OntgrendelGate>
     <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center gap-4">
       <p className="text-xs font-bold uppercase tracking-wide text-inkSoft">Inslag opgeslagen</p>
       <h1 className="font-serif text-2xl font-semibold text-green">Box #{boxId}</h1>
@@ -38,5 +40,6 @@ export default async function InslagSuccesPage({
         </Link>
       </div>
     </div>
+    </OntgrendelGate>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { zetOntgrendeld } from "@/components/ontgrendel-gate";
 
 export default function PincodeInstellenForm() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function PincodeInstellenForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Instellen mislukt");
+      zetOntgrendeld();
       router.push("/dashboard");
       router.refresh();
     } catch (err: any) {

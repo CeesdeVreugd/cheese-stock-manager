@@ -90,18 +90,18 @@ export default function UitslagForm() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-2xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-6 pb-3">
+    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-3xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
+      <div className="flex items-center justify-between px-4 pt-6 pb-3 md:px-8">
         <Link href="/dashboard" className="text-sm font-semibold text-green">
           ‹ Terug
         </Link>
-        <h1 className="font-serif font-semibold text-green">Uitslag</h1>
+        <h1 className="font-serif font-semibold text-green md:text-lg">Uitslag</h1>
         <div className="w-12" />
       </div>
 
-      <div className="flex-1 overflow-auto px-5 pb-6 flex flex-col gap-4">
+      <div className="flex-1 overflow-auto px-5 pb-6 md:px-8 flex flex-col gap-4">
         {!box && (
-          <form onSubmit={zoek} className="flex flex-col gap-3">
+          <form onSubmit={zoek} className="flex flex-col gap-3 md:max-w-md">
             <p className="text-xs font-bold text-ink">Zoek op BoxID of partijcode</p>
             <div className="flex gap-2">
               <input
@@ -130,8 +130,8 @@ export default function UitslagForm() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         {box && (
-          <form onSubmit={bevestig} className="flex flex-col gap-4">
-            <div className="rounded-2xl border-[1.5px] border-gold bg-white p-3.5">
+          <form onSubmit={bevestig} className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-6 md:items-start">
+            <div className="rounded-2xl border-[1.5px] border-gold bg-white p-3.5 md:sticky md:top-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="font-serif font-semibold text-green">Box #{box.boxId}</span>
                 <button type="button" onClick={() => setBox(null)} className="text-xs text-inkSoft underline">
@@ -152,6 +152,7 @@ export default function UitslagForm() {
               </div>
             </div>
 
+            <div className="flex flex-col gap-4">
             <div>
               <p className="text-xs font-bold text-ink mb-1.5">Uitslag type</p>
               <div className="flex rounded-xl bg-goldSoft p-1">
@@ -215,6 +216,7 @@ export default function UitslagForm() {
             <button disabled={busy} className="w-full rounded-xl bg-gold py-3.5 font-bold text-white shadow-md disabled:opacity-60">
               {busy ? "Bevestigen…" : "Bevestig uitslag"}
             </button>
+            </div>
           </form>
         )}
       </div>

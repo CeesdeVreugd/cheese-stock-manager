@@ -8,7 +8,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Rond app-icoon, pincode-ontgrendeling en een bredere desktopindeling voor het hoofdscherm toegevoegd."
+set "OMSCHRIJVING=Pincode-bug opgelost, gebruikers echt verwijderen, en een eigen brede desktopindeling voor alle schermen."
 
 echo.
 echo Bestanden bijwerken in:

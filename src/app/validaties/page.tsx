@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
+import OntgrendelGate from "@/components/ontgrendel-gate";
 import { prisma } from "@/lib/prisma";
 import ValidatieLijst from "./validatie-lijst";
 
@@ -25,20 +26,40 @@ export default async function ValidatiesPage() {
   ]);
 
   return (
-    <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-2xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-6 pb-3">
-        <Link href="/dashboard" className="text-sm font-semibold text-green">
-          ‹ Terug
-        </Link>
-        <h1 className="font-serif font-semibold text-green">Validatielijsten</h1>
-        <div className="w-12" />
-      </div>
+    <OntgrendelGate>
+      <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-none">
+        {/* ---------- Mobiel ---------- */}
+        <div className="md:hidden flex flex-col flex-1">
+          <div className="flex items-center justify-between px-4 pt-6 pb-3">
+            <Link href="/dashboard" className="text-sm font-semibold text-green">
+              ‹ Terug
+            </Link>
+            <h1 className="font-serif font-semibold text-green">Validatielijsten</h1>
+            <div className="w-12" />
+          </div>
+          <div className="flex-1 overflow-auto px-5 pb-6">
+            <ValidatieLijst soort="productafkomst" titel="Productafkomst" initieel={productafkomst} />
+            <ValidatieLijst soort="proces" titel="Proces" initieel={proces} />
+            <ValidatieLijst soort="model" titel="Model" initieel={model} />
+          </div>
+        </div>
 
-      <div className="flex-1 overflow-auto px-5 pb-6">
-        <ValidatieLijst soort="productafkomst" titel="Productafkomst" initieel={productafkomst} />
-        <ValidatieLijst soort="proces" titel="Proces" initieel={proces} />
-        <ValidatieLijst soort="model" titel="Model" initieel={model} />
+        {/* ---------- Desktop: drie kolommen naast elkaar ---------- */}
+        <div className="hidden md:block md:px-10 md:py-10 md:max-w-6xl">
+          <h1 className="font-serif text-3xl font-semibold text-green mb-6">Validatielijsten</h1>
+          <div className="grid grid-cols-3 gap-6">
+            <div className="rounded-2xl border-[1.5px] border-line bg-white p-5">
+              <ValidatieLijst soort="productafkomst" titel="Productafkomst" initieel={productafkomst} />
+            </div>
+            <div className="rounded-2xl border-[1.5px] border-line bg-white p-5">
+              <ValidatieLijst soort="proces" titel="Proces" initieel={proces} />
+            </div>
+            <div className="rounded-2xl border-[1.5px] border-line bg-white p-5">
+              <ValidatieLijst soort="model" titel="Model" initieel={model} />
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </OntgrendelGate>
   );
 }

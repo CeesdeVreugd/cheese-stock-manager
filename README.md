@@ -83,9 +83,10 @@ toont de app een korte instructie om het via Delen → "Zet op beginscherm" te
 doen.
 
 Op schermen vanaf tabletformaat (breder dan ca. 768px) verschijnt een vaste
-zijbalk met navigatie. Het hoofdscherm heeft een eigen, brede desktop-indeling;
-de overige schermen tonen op desktop voorlopig een gecentreerd paneel (een
-volledig eigen brede indeling per scherm is een logische vervolgstap).
+zijbalk met navigatie. Elk scherm heeft nu een eigen, brede desktop-indeling
+(bijvoorbeeld een echte tabel voor Voorraad en Gebruikers, drie kolommen naast
+elkaar voor Validatielijsten) in plaats van simpelweg de mobiele versie
+uitgerekt te tonen.
 Uitloggen kan zowel op het mobiele hoofdscherm als in de desktop-zijbalk.
 
 ## Inloggen met pincode (§4.3)
@@ -100,7 +101,6 @@ na het volledig afsluiten van de browser, is een nieuwe e-mailcode nodig.
 - Labelprinten naar een fysieke printer (§7.1: Raspberry Pi-printstation of Zebra Browser Print) — de QR-code zelf wordt al gegenereerd en getoond (na inslag, en op elke box in de voorraadlijst)
 - Geplande (cron) taak die de facturatie automatisch elke donderdag klaarzet, i.p.v. nu op-aanvraag berekend — zie §8.1 over de afhankelijkheid met de dagsnapshot
 - Rollen/rechten verder afdwingen per scherm (nu zijn Validatielijsten en Gebruikers beheerder-only; de rest is gelijk voor iedere ingelogde gebruiker)
-- Een volledig eigen, brede desktop-indeling voor Inslag/Uitslag/Voorraad/Facturatie/Validatielijsten/Gebruikers (nu nog een gecentreerd paneel; het hoofdscherm heeft al wel zijn eigen brede indeling)
 - Overstap van gratis tiers naar betaalde tiers zodra dit meer dan een proef is
   (zie §11 van het ontwerpdocument voor de kosteninschatting)
 

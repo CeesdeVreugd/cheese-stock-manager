@@ -43,7 +43,7 @@ model Gebruiker {
 // Eenmalige inlogcode, zie ontwerpdocument §3.5 / §4.2
 model LoginCode {
   id          String   @id @default(uuid())
-  gebruiker   Gebruiker @relation(fields: [gebruikerId], references: [id])
+  gebruiker   Gebruiker @relation(fields: [gebruikerId], references: [id], onDelete: Cascade)
   gebruikerId String
   codeHash    String
   verlooptOp  DateTime
@@ -54,7 +54,7 @@ model LoginCode {
 // Pincode per toestel, zie §3.5 / §4.3 (harde 2-wekelijkse hergeldigheidsgrens)
 model DevicePincode {
   id             String   @id @default(uuid())
-  gebruiker      Gebruiker @relation(fields: [gebruikerId], references: [id])
+  gebruiker      Gebruiker @relation(fields: [gebruikerId], references: [id], onDelete: Cascade)
   gebruikerId    String
   deviceId       String
   pincodeHash    String

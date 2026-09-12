@@ -66,10 +66,12 @@ automatisch (Vercel levert altijd HTTPS).
 
 ## Wijzigingen publiceren
 
-Na de eerste keer opzetten (hierboven) kun je bij elke volgende aanpassing
-gewoon dubbelklikken op **`publiceren.cmd`** in deze map. Het script vraagt om
-een korte omschrijving en regelt daarna zelf `git add`, `git commit` en
-`git push` — Vercel bouwt en publiceert de nieuwe versie vervolgens automatisch.
+`publiceren.cmd` is volledig automatisch: hij weet zelf waar je vaste
+projectmap staat, kopieert de bestanden ernaartoe (en ruimt daar verouderde
+bestanden op die niet meer bestaan), en commit + pusht met een omschrijving
+die er al in staat. Je hoeft de uitgepakte map dus nergens specifiek neer te
+zetten — pak 'm uit, bijvoorbeeld in Downloads, en dubbelklik op
+`publiceren.cmd`. Vercel bouwt en publiceert daarna automatisch.
 
 ## Wat hierna nog moet gebeuren (zie het technisch ontwerpdocument)
 

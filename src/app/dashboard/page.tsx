@@ -14,22 +14,25 @@ export default async function DashboardPage() {
   const totaalKg = ((totaalGram._sum.nettoGram ?? 0) / 1000).toFixed(1);
 
   const acties = [
-    { href: "/inslag", label: "Inslag", sub: "Nieuwe box registreren", primary: true },
-    { href: "/uitslag", label: "Uitslag", sub: "Zoek en slag uit" },
-  ];
+    { href: "/inslag", label: "Inslag", sub: "Nieuwe box registreren", primary: true, mag: gebruiker.rol.canInslag },
+    { href: "/uitslag", label: "Uitslag", sub: "Zoek en slag uit", mag: gebruiker.rol.canUitslag },
+    { href: "/reserveren", label: "Reserveren", sub: "Box/kazen vastzetten", mag: gebruiker.rol.canReserveren },
+  ].filter((t) => t.mag);
 
   const overzichten = [
-    { href: "/voorraad", label: "Voorraad", sub: `${boxCount} boxen actief` },
-    { href: "/inslag/overzicht", label: "Inslag overzicht", sub: "Historie & details" },
-    { href: "/uitslag/overzicht", label: "Uitslag overzicht", sub: "Historie & details" },
-    { href: "/facturatie", label: "Facturatie", sub: "Weekoverzicht & PDF" },
-  ];
+    { href: "/voorraad", label: "Voorraad", sub: `${boxCount} boxen actief`, mag: gebruiker.rol.canVoorraad },
+    { href: "/inslag/overzicht", label: "Inslag overzicht", sub: "Historie & details", mag: gebruiker.rol.canInslag },
+    { href: "/uitslag/overzicht", label: "Uitslag overzicht", sub: "Historie & details", mag: gebruiker.rol.canUitslag },
+    { href: "/facturatie", label: "Facturatie", sub: "Weekoverzicht & PDF", mag: gebruiker.rol.canFacturatie },
+    { href: "/reserveringen", label: "Reserveringen", sub: "Openstaande reserveringen", mag: gebruiker.rol.canReserveren },
+  ].filter((o) => o.mag);
 
   const beheer =
-    gebruiker.rol === "beheerder"
+    gebruiker.rol.canBeheer
       ? [
           { href: "/validaties", label: "Validatielijsten", sub: "Productafkomst, proces, model" },
           { href: "/gebruikers", label: "Gebruikers", sub: "Aanmaken, rol en toegang" },
+          { href: "/rollen", label: "Rollen", sub: "Rechten per rol instellen" },
         ]
       : [];
 
@@ -56,21 +59,25 @@ export default async function DashboardPage() {
         </div>
 
         <div className="px-6 py-6">
-          <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5">Snel registreren</p>
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {acties.map((t) => (
-              <Link
-                key={t.href}
-                href={t.href}
-                className={`rounded-2xl border-[1.5px] p-4 flex flex-col gap-3 min-h-[92px] ${
-                  t.primary ? "bg-gold border-gold text-white" : "bg-white border-line"
-                }`}
-              >
-                <span className="font-semibold text-sm">{t.label}</span>
-                <span className={`text-xs ${t.primary ? "text-white/80" : "text-inkSoft"}`}>{t.sub}</span>
-              </Link>
-            ))}
-          </div>
+          {acties.length > 0 && (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5">Snel registreren</p>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {acties.map((t) => (
+                  <Link
+                    key={t.href}
+                    href={t.href}
+                    className={`rounded-2xl border-[1.5px] p-4 flex flex-col gap-3 min-h-[92px] ${
+                      t.primary ? "bg-gold border-gold text-white" : "bg-white border-line"
+                    }`}
+                  >
+                    <span className="font-semibold text-sm">{t.label}</span>
+                    <span className={`text-xs ${t.primary ? "text-white/80" : "text-inkSoft"}`}>{t.sub}</span>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
 
           <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5">Overzichten</p>
           {overzichten.map((o) => (
@@ -123,20 +130,22 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-4">
-          {acties.map((t) => (
-            <Link
-              key={t.href}
-              href={t.href}
-              className={`rounded-2xl border-[1.5px] p-6 flex flex-col gap-2 ${
-                t.primary ? "bg-gold border-gold text-white" : "bg-white border-line hover:border-goldDeep"
-              }`}
-            >
-              <span className="font-serif text-lg font-semibold">{t.label}</span>
-              <span className={`text-sm ${t.primary ? "text-white/80" : "text-inkSoft"}`}>{t.sub}</span>
-            </Link>
-          ))}
-        </div>
+        {acties.length > 0 && (
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            {acties.map((t) => (
+              <Link
+                key={t.href}
+                href={t.href}
+                className={`rounded-2xl border-[1.5px] p-6 flex flex-col gap-2 ${
+                  t.primary ? "bg-gold border-gold text-white" : "bg-white border-line hover:border-goldDeep"
+                }`}
+              >
+                <span className="font-serif text-lg font-semibold">{t.label}</span>
+                <span className={`text-sm ${t.primary ? "text-white/80" : "text-inkSoft"}`}>{t.sub}</span>
+              </Link>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-4 gap-4 mb-10">
           {overzichten.map((o) => (

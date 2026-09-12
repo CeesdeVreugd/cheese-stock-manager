@@ -60,12 +60,13 @@ export async function getSessionGebruikerId(): Promise<string | null> {
   return verifySessionToken(store.get(SESSION_COOKIE)?.value);
 }
 
-// Haalt de volledige gebruiker op (incl. rol) — nodig voor schermen/acties
-// die alleen voor een beheerder bedoeld zijn (§4.4: rolcontrole hoort server-side).
+// Haalt de volledige gebruiker op (incl. rol met rechten) — nodig voor
+// schermen/acties die op specifieke rechten controleren (§4.4: rolcontrole
+// hoort server-side).
 export async function getSessionGebruiker() {
   const id = await getSessionGebruikerId();
   if (!id) return null;
-  return prisma.gebruiker.findUnique({ where: { id } });
+  return prisma.gebruiker.findUnique({ where: { id }, include: { rol: true } });
 }
 
 export async function clearSessionCookie() {
@@ -118,10 +119,16 @@ export async function vereisOntgrendeldeGebruiker() {
   const gebruikerId = await getSessionGebruikerId();
   if (!gebruikerId) redirect("/login");
 
-  const gebruiker = await prisma.gebruiker.findUnique({ where: { id: gebruikerId! } });
+  const gebruiker = await prisma.gebruiker.findUnique({ where: { id: gebruikerId! }, include: { rol: true } });
   if (!gebruiker || gebruiker.status !== "actief") redirect("/login");
+  // rol is optioneel in het schema (zie §-opmerking bij het model) zodat
+  // het toevoegen van dit veld destijds geen destructieve migratie was;
+  // db:seed kent echter altijd een rol toe, dus dit zou zich in de praktijk
+  // niet moeten voordoen. Als het toch gebeurt: veilig terug naar login
+  // i.p.v. de rest van de app met een onvolledige gebruiker te laten crashen.
+  if (!gebruiker.rol) redirect("/login");
 
-  return gebruiker;
+  return { ...gebruiker, rol: gebruiker.rol };
 }
 
 // Voor API-routes: geen redirect (past niet in een JSON-response), geeft
@@ -131,10 +138,11 @@ export async function vereisOntgrendeldeGebruikerApi() {
   const gebruikerId = await getSessionGebruikerId();
   if (!gebruikerId) return null;
 
-  const gebruiker = await prisma.gebruiker.findUnique({ where: { id: gebruikerId } });
+  const gebruiker = await prisma.gebruiker.findUnique({ where: { id: gebruikerId }, include: { rol: true } });
   if (!gebruiker || gebruiker.status !== "actief") return null;
+  if (!gebruiker.rol) return null;
 
-  return gebruiker;
+  return { ...gebruiker, rol: gebruiker.rol };
 }
 
 // ---------- E-mail versturen ----------

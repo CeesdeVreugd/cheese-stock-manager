@@ -5,6 +5,7 @@ import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 export async function POST(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
+  if (!gebruiker.rol.canUitslag) return NextResponse.json({ error: "Geen rechten voor uitslag" }, { status: 403 });
 
   const body = await req.json();
   const { transactionId, boxId, uitslagType, tarief, aantalKazenUit, opmerking } = body;

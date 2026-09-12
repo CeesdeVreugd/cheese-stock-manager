@@ -7,12 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Rol {
-  beheerder
-  medewerker
-  lezer
-}
-
 enum GebruikerStatus {
   actief
   geblokkeerd
@@ -28,16 +22,40 @@ enum UitslagTarief {
   geetiketteerd
 }
 
+// Aanpasbare rollen met per-scherm rechten (i.p.v. een vaste beheerder/
+// medewerker/lezer-enum), zodat een beheerder zelf rollen kan samenstellen
+// — bijvoorbeeld iemand die alleen Voorraad mag zien.
+model Rol {
+  id              String   @id @default(uuid())
+  naam            String   @unique
+  canInslag       Boolean  @default(false)
+  canUitslag      Boolean  @default(false)
+  canVoorraad     Boolean  @default(false)
+  canFacturatie   Boolean  @default(false)
+  canReserveren   Boolean  @default(false)
+  canBeheer       Boolean  @default(false) // validatielijsten, gebruikers én rollen
+  createdAt       DateTime @default(now())
+
+  gebruikers Gebruiker[]
+}
+
 model Gebruiker {
   id        String          @id @default(uuid())
   naam      String
   email     String          @unique
-  rol       Rol             @default(medewerker)
+  rol       Rol?            @relation(fields: [rolId], references: [id])
+  // Optioneel gehouden i.p.v. verplicht: zo blijft het toevoegen van dit
+  // veld aan een bestaande, gevulde tabel een niet-destructieve wijziging
+  // (geen "reset de hele database"-waarschuwing). db:seed kent automatisch
+  // de standaardrol Beheerder toe aan elke bestaande gebruiker die nog geen
+  // rol heeft — zie prisma/seed.ts.
+  rolId     String?
   status    GebruikerStatus @default(actief)
   createdAt DateTime        @default(now())
 
   loginCodes     LoginCode[]
   devicePincodes DevicePincode[]
+  reserveringen  Reservering[]
 }
 
 // Eenmalige inlogcode, zie ontwerpdocument §3.5 / §4.2
@@ -143,4 +161,26 @@ model ValidatieItem {
   createdAt DateTime       @default(now())
 
   @@unique([soort, naam])
+}
+
+enum ReserveringStatus {
+  open
+  uitgevoerd
+  geannuleerd
+}
+
+// Reservering van (een deel van) een box door een verkoper op de vloer,
+// bedoeld voor uitslag naar de groothandel. Puur informatief bovenop de
+// bestaande voorraad — beïnvloedt Box/InslagLog/UitslagLog niet vanzelf.
+model Reservering {
+  id              String            @id @default(uuid())
+  boxId           Int
+  volledigeBox    Boolean           @default(true)
+  aantalKazen     Int?              // alleen gevuld als volledigeBox = false
+  klant           String?
+  opmerking       String?
+  status          ReserveringStatus @default(open)
+  gebruiker       Gebruiker         @relation(fields: [gebruikerId], references: [id])
+  gebruikerId     String
+  createdAt       DateTime          @default(now())
 }

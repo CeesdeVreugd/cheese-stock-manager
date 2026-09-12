@@ -1,17 +1,15 @@
 import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
-import OntgrendelGate from "@/components/ontgrendel-gate";
 import { prisma } from "@/lib/prisma";
-import GebruikersLijst from "./gebruikers-lijst";
+import OntgrendelGate from "@/components/ontgrendel-gate";
+import RollenLijst from "./rollen-lijst";
 
-export default async function GebruikersPage() {
+export default async function RollenPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
   if (!gebruiker.rol.canBeheer) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-        <p className="text-sm text-inkSoft">
-          Dit scherm is alleen beschikbaar voor de rol beheerder (§4.1/§4.4 van het ontwerpdocument).
-        </p>
+        <p className="text-sm text-inkSoft">Dit scherm is alleen beschikbaar voor een beheerder.</p>
         <Link href="/dashboard" className="mt-4 text-sm font-semibold text-green">
           ‹ Terug naar hoofdscherm
         </Link>
@@ -19,10 +17,10 @@ export default async function GebruikersPage() {
     );
   }
 
-  const [gebruikers, rollen] = await Promise.all([
-    prisma.gebruiker.findMany({ orderBy: { naam: "asc" }, include: { rol: true } }),
-    prisma.rol.findMany({ orderBy: { naam: "asc" } }),
-  ]);
+  const rollen = await prisma.rol.findMany({
+    orderBy: { naam: "asc" },
+    include: { _count: { select: { gebruikers: true } } },
+  });
 
   return (
     <OntgrendelGate>
@@ -33,18 +31,18 @@ export default async function GebruikersPage() {
             <Link href="/dashboard" className="text-sm font-semibold text-green">
               ‹ Terug
             </Link>
-            <h1 className="font-serif font-semibold text-green">Gebruikers</h1>
+            <h1 className="font-serif font-semibold text-green">Rollen</h1>
             <div className="w-12" />
           </div>
           <div className="flex-1 overflow-auto px-5 pb-6">
-            <GebruikersLijst initieel={gebruikers} rollen={rollen} huidigId={gebruiker.id} />
+            <RollenLijst initieel={rollen} huidigRolId={gebruiker.rol.id} />
           </div>
         </div>
 
         {/* ---------- Desktop ---------- */}
-        <div className="hidden md:block md:px-10 md:py-10 md:max-w-6xl">
-          <h1 className="font-serif text-3xl font-semibold text-green mb-6">Gebruikers</h1>
-          <GebruikersLijst initieel={gebruikers} rollen={rollen} huidigId={gebruiker.id} />
+        <div className="hidden md:block md:px-10 md:py-10 md:max-w-5xl">
+          <h1 className="font-serif text-3xl font-semibold text-green mb-6">Rollen</h1>
+          <RollenLijst initieel={rollen} huidigRolId={gebruiker.rol.id} />
         </div>
       </div>
     </OntgrendelGate>

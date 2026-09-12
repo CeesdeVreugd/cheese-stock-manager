@@ -5,6 +5,7 @@ import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/
 export async function GET(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
+  if (!gebruiker.rol.canFacturatie) return NextResponse.json({ error: "Geen rechten voor facturatie" }, { status: 403 });
 
   const weekParam = req.nextUrl.searchParams.get("week");
   const generatieDatum = weekParam ? new Date(weekParam) : huidigeGeneratieDatum();

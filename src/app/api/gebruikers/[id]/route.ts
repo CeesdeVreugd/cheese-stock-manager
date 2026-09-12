@@ -2,19 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 
-const GELDIGE_ROLLEN = ["beheerder", "medewerker", "lezer"];
-
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
-  if (gebruiker.rol !== "beheerder") {
+  if (!gebruiker.rol.canBeheer) {
     return NextResponse.json({ error: "Alleen een beheerder kan gebruikers aanpassen" }, { status: 403 });
   }
 
   const { id } = await params;
-  const { status, rol } = await req.json();
+  const { status, rolId } = await req.json();
 
-  const data: { status?: "actief" | "geblokkeerd"; rol?: "beheerder" | "medewerker" | "lezer" } = {};
+  const data: { status?: "actief" | "geblokkeerd"; rolId?: string } = {};
 
   if (status !== undefined) {
     if (!["actief", "geblokkeerd"].includes(status)) {
@@ -26,8 +24,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.status = status;
   }
 
-  if (rol !== undefined) {
-    if (!GELDIGE_ROLLEN.includes(rol)) {
+  if (rolId !== undefined) {
+    const rolBestaat = await prisma.rol.findUnique({ where: { id: rolId } });
+    if (!rolBestaat) {
       return NextResponse.json({ error: "Ongeldige rol" }, { status: 400 });
     }
     // Zelfde voorzichtigheidsprincipe als bij blokkeren: niet je eigen rol
@@ -36,17 +35,17 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (id === gebruiker.id) {
       return NextResponse.json({ error: "Je kunt je eigen rol niet aanpassen" }, { status: 400 });
     }
-    data.rol = rol;
+    data.rolId = rolId;
   }
 
-  const bijgewerkt = await prisma.gebruiker.update({ where: { id }, data });
+  const bijgewerkt = await prisma.gebruiker.update({ where: { id }, data, include: { rol: true } });
   return NextResponse.json({ gebruiker: bijgewerkt });
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
-  if (gebruiker.rol !== "beheerder") {
+  if (!gebruiker.rol.canBeheer) {
     return NextResponse.json({ error: "Alleen een beheerder kan gebruikers verwijderen" }, { status: 403 });
   }
 

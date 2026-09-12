@@ -1,14 +1,14 @@
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import OntgrendelGate from "@/components/ontgrendel-gate";
 import GeenToegang from "@/components/geen-toegang";
-import InslagForm from "./inslag-form";
+import ReserverenForm from "./reserveren-form";
 
-export default async function InslagPage() {
+export default async function ReserverenPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
-  if (!gebruiker.rol.canInslag) return <GeenToegang />;
+  if (!gebruiker.rol.canReserveren) return <GeenToegang />;
   return (
     <OntgrendelGate>
-      <InslagForm />
+      <ReserverenForm />
     </OntgrendelGate>
   );
 }

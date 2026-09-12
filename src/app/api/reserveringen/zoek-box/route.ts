@@ -5,7 +5,7 @@ import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 export async function GET(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
-  if (!gebruiker.rol.canUitslag) return NextResponse.json({ error: "Geen rechten voor uitslag" }, { status: 403 });
+  if (!gebruiker.rol.canReserveren) return NextResponse.json({ error: "Geen rechten voor reserveren" }, { status: 403 });
 
   const q = req.nextUrl.searchParams.get("q")?.trim();
   if (!q) return NextResponse.json({ box: null });
@@ -13,13 +13,19 @@ export async function GET(req: NextRequest) {
   const boxIdNum = Number(q);
   const box = await prisma.box.findFirst({
     where: {
-      OR: [
-        Number.isFinite(boxIdNum) ? { boxId: boxIdNum } : undefined,
-        { partijcode: { contains: q } },
-      ].filter(Boolean) as any,
+      OR: [Number.isFinite(boxIdNum) ? { boxId: boxIdNum } : undefined, { partijcode: { contains: q } }].filter(
+        Boolean
+      ) as any,
     },
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json({ box });
+  if (!box) return NextResponse.json({ box: null });
+
+  const bestaandeReservering = await prisma.reservering.findFirst({
+    where: { boxId: box.boxId, status: "open" },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json({ box, bestaandeReservering });
 }

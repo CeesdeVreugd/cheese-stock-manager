@@ -2,16 +2,12 @@ import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import OntgrendelGate from "@/components/ontgrendel-gate";
-
-function fmtDatum(d: Date) {
-  return d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric" });
-}
-function fmtDatumTijd(d: Date) {
-  return `${fmtDatum(d)} ${d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" })}`;
-}
+import GeenToegang from "@/components/geen-toegang";
+import { fmtDatum, fmtDatumTijd } from "@/lib/format";
 
 export default async function UitslagOverzichtPage() {
-  await vereisOntgrendeldeGebruiker();
+  const gebruiker = await vereisOntgrendeldeGebruiker();
+  if (!gebruiker.rol.canUitslag) return <GeenToegang />;
 
   const regels = await prisma.uitslagLog.findMany({
     orderBy: { uitslagtijd: "desc" },

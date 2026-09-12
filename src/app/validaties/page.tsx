@@ -6,7 +6,7 @@ import ValidatieLijst from "./validatie-lijst";
 
 export default async function ValidatiesPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
-  if (gebruiker.rol !== "beheerder") {
+  if (!gebruiker.rol.canBeheer) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
         <p className="text-sm text-inkSoft">

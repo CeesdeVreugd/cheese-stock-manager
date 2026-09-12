@@ -2,19 +2,28 @@
 
 import { useState } from "react";
 
+type Rol = { id: string; naam: string };
 type Gebruiker = {
   id: string;
   naam: string;
   email: string;
-  rol: "beheerder" | "medewerker" | "lezer";
+  rol: Rol | null;
   status: "actief" | "geblokkeerd";
 };
 
-export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebruiker[]; huidigId: string }) {
+export default function GebruikersLijst({
+  initieel,
+  rollen,
+  huidigId,
+}: {
+  initieel: Gebruiker[];
+  rollen: Rol[];
+  huidigId: string;
+}) {
   const [lijst, setLijst] = useState(initieel);
   const [naam, setNaam] = useState("");
   const [email, setEmail] = useState("");
-  const [rol, setRol] = useState<Gebruiker["rol"]>("medewerker");
+  const [rolId, setRolId] = useState(rollen[0]?.id ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [teVerwijderen, setTeVerwijderen] = useState<Gebruiker | null>(null);
@@ -27,14 +36,13 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
       const res = await fetch("/api/gebruikers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ naam, email, rol }),
+        body: JSON.stringify({ naam, email, rolId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Aanmaken mislukt");
       setLijst((l) => [...l, data.gebruiker].sort((a, b) => a.naam.localeCompare(b.naam)));
       setNaam("");
       setEmail("");
-      setRol("medewerker");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -62,14 +70,14 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
     }
   }
 
-  async function wisselRol(g: Gebruiker, nieuweRol: Gebruiker["rol"]) {
+  async function wisselRol(g: Gebruiker, nieuweRolId: string) {
     setBusy(true);
     setError(null);
     try {
       const res = await fetch(`/api/gebruikers/${g.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rol: nieuweRol }),
+        body: JSON.stringify({ rolId: nieuweRolId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Bijwerken mislukt");
@@ -114,10 +122,12 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
           placeholder="naam@beekvreugdkaas.nl"
           className="input"
         />
-        <select value={rol} onChange={(e) => setRol(e.target.value as Gebruiker["rol"])} className="input">
-          <option value="medewerker">Medewerker</option>
-          <option value="beheerder">Beheerder</option>
-          <option value="lezer">Lezer</option>
+        <select value={rolId} onChange={(e) => setRolId(e.target.value)} className="input">
+          {rollen.map((r) => (
+            <option key={r.id} value={r.id}>
+              {r.naam}
+            </option>
+          ))}
         </select>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button disabled={busy} className="rounded-xl bg-gold py-2.5 text-sm font-bold text-white">
@@ -151,17 +161,19 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
                 <div className="text-xs text-inkSoft flex items-center gap-1.5">
                   <span>{g.email}</span>
                   {g.id === huidigId ? (
-                    <span>· {g.rol}</span>
+                    <span>· {g.rol?.naam ?? "Geen rol"}</span>
                   ) : (
                     <select
-                      value={g.rol}
-                      onChange={(e) => wisselRol(g, e.target.value as Gebruiker["rol"])}
+                      value={g.rol?.id ?? ""}
+                      onChange={(e) => wisselRol(g, e.target.value)}
                       disabled={busy}
                       className="border-0 bg-transparent text-xs text-inkSoft underline"
                     >
-                      <option value="medewerker">medewerker</option>
-                      <option value="beheerder">beheerder</option>
-                      <option value="lezer">lezer</option>
+                      {rollen.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.naam}
+                        </option>
+                      ))}
                     </select>
                   )}
                 </div>
@@ -195,17 +207,19 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
                 <td className="py-3 pr-3 text-inkSoft">{g.email}</td>
                 <td className="py-3 pr-3">
                   {g.id === huidigId ? (
-                    <span className="capitalize">{g.rol}</span>
+                    <span>{g.rol?.naam ?? "Geen rol"}</span>
                   ) : (
                     <select
-                      value={g.rol}
-                      onChange={(e) => wisselRol(g, e.target.value as Gebruiker["rol"])}
+                      value={g.rol?.id ?? ""}
+                      onChange={(e) => wisselRol(g, e.target.value)}
                       disabled={busy}
                       className="rounded-lg border-[1.5px] border-line px-2 py-1 text-xs"
                     >
-                      <option value="medewerker">Medewerker</option>
-                      <option value="beheerder">Beheerder</option>
-                      <option value="lezer">Lezer</option>
+                      {rollen.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.naam}
+                        </option>
+                      ))}
                     </select>
                   )}
                 </td>

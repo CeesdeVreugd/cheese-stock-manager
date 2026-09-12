@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             tegel-indeling), in plaats van overal dezelfde smalle kaart te tonen.
         */}
         <div className="md:flex md:min-h-screen">
-          {gebruiker && (
+          {gebruiker && gebruiker.rol && (
             <AppSidebar gebruiker={{ naam: gebruiker.naam, email: gebruiker.email, rol: gebruiker.rol }} />
           )}
           <div className="md:flex-1 md:min-w-0">

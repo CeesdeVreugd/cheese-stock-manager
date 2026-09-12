@@ -66,12 +66,26 @@ automatisch (Vercel levert altijd HTTPS).
 
 ## Wijzigingen publiceren
 
-`publiceren.cmd` is volledig automatisch: hij weet zelf waar je vaste
-projectmap staat, kopieert de bestanden ernaartoe (en ruimt daar verouderde
-bestanden op die niet meer bestaan), en commit + pusht met een omschrijving
-die er al in staat. Je hoeft de uitgepakte map dus nergens specifiek neer te
-zetten — pak 'm uit, bijvoorbeeld in Downloads, en dubbelklik op
-`publiceren.cmd`. Vercel bouwt en publiceert daarna automatisch.
+`publiceren.cmd` is volledig automatisch, van uitpakken tot live: hij kopieert
+de bestanden naar je vaste projectmap (en ruimt daar verouderde bestanden op),
+draait `npm install`, werkt de database bij (`prisma db push`), zet
+standaardwaarden klaar (`db:seed`), en commit + pusht — allemaal met één
+dubbelklik. Je hoeft de uitgepakte map nergens specifiek neer te zetten — pak
+'m uit, bijvoorbeeld in Downloads, en dubbelklik op `publiceren.cmd`.
+
+**Eén bewuste afweging:** de database-stap gebruikt `--accept-data-loss`, wat
+betekent dat een waarschuwing over dataverlies (zoals je eerder handmatig met
+"y" bevestigde) nu automatisch wordt geaccepteerd, zonder te vragen. Dat is
+precies wat "geen omkijken naar" vraagt, maar betekent ook dat een
+schemawijziging die een keer écht belangrijke data zou raken, zonder
+tussenstop wordt doorgevoerd. Voor deze testfase is dat een prima afweging;
+zodra er echte bedrijfsdata in staat waar je niet per ongeluk iets van kwijt
+wilt raken, is het verstandig om dit stukje er weer uit te halen en
+database-wijzigingen dan bewust handmatig te bevestigen.
+
+`db:seed` is veilig om steeds opnieuw te draaien: het zet alleen ontbrekende
+standaardwaarden (rollen, validatielijst-items) klaar en raakt nooit gegevens
+aan die je zelf al hebt aangepast.
 
 ## Webapp installeren (pc en telefoon)
 
@@ -100,9 +114,29 @@ na het volledig afsluiten van de browser, is een nieuwe e-mailcode nodig.
 
 - Labelprinten naar een fysieke printer (§7.1: Raspberry Pi-printstation of Zebra Browser Print) — de QR-code zelf wordt al gegenereerd en getoond (na inslag, en op elke box in de voorraadlijst)
 - Geplande (cron) taak die de facturatie automatisch elke donderdag klaarzet, i.p.v. nu op-aanvraag berekend — zie §8.1 over de afhankelijkheid met de dagsnapshot
-- Rollen/rechten verder afdwingen per scherm (nu zijn Validatielijsten en Gebruikers beheerder-only; de rest is gelijk voor iedere ingelogde gebruiker)
 - Overstap van gratis tiers naar betaalde tiers zodra dit meer dan een proef is
   (zie §11 van het ontwerpdocument voor de kosteninschatting)
+
+## Rollen en rechten
+
+Rollen zijn niet langer vast (beheerder/medewerker/lezer), maar volledig zelf
+samen te stellen via het scherm **Rollen** (alleen zichtbaar voor rollen met
+"Beheer"-rechten): per rol vink je aan welke schermen toegankelijk zijn
+(Inslag, Uitslag, Voorraad, Facturatie, Reserveren, Beheer). Zo kan
+bijvoorbeeld een rol "Alleen voorraad" gemaakt worden die verder nergens bij
+kan. De rechten worden zowel op elk scherm als in de bijbehorende API's
+gecontroleerd, niet alleen verborgen in het menu.
+
+## Reserveringsmodule
+
+Nieuw: verkopers kunnen via **Reserveren** een box scannen of opzoeken en
+vastleggen dat (een deel van) de box gereserveerd is voor een groothandel-
+klant. Dit past de voorraad nog niet aan — het is puur een aankondiging,
+zichtbaar via een "Gereserveerd"-label in Voorraad en in het overzicht
+**Reserveringen**, waar een reservering afgerond of geannuleerd kan worden.
+De daadwerkelijke koppeling met Uitslag (bijvoorbeeld automatisch afronden
+zodra de gereserveerde hoeveelheid ook echt is uitgeslagen) is een logische
+vervolgstap.
 
 ## Een opmerking over de opslagberekening (kg-dagen)
 

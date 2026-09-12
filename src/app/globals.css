@@ -23,3 +23,12 @@ body {
     font-size: 16px !important;
   }
 }
+
+/* Native datumvelden renderen inconsistent tussen browsers (met name iOS
+   Safari): gecentreerde tekst, geen duidelijke rand, en soms breder dan de
+   omliggende container. Dit normaliseert het uiterlijk zodat het aansluit
+   bij de overige velden. */
+input[type="date"] {
+  text-align: left;
+  min-width: 0;
+}

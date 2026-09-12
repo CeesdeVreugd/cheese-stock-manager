@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   // Rolcontrole server-side (§4.4), niet alleen door de knop te verbergen
-  if (gebruiker.rol !== "beheerder") {
+  if (!gebruiker.rol.canBeheer) {
     return NextResponse.json({ error: "Alleen een beheerder kan validatielijsten aanpassen" }, { status: 403 });
   }
 

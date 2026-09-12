@@ -4,24 +4,41 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import UitloggenKnop from "./uitloggen-knop";
 
-type Gebruiker = { naam: string; email: string; rol: "beheerder" | "medewerker" | "lezer" };
-
-const LINKS = [
-  { href: "/dashboard", label: "Hoofdscherm" },
-  { href: "/inslag", label: "Inslag" },
-  { href: "/uitslag", label: "Uitslag" },
-  { href: "/voorraad", label: "Voorraad" },
-  { href: "/facturatie", label: "Facturatie" },
-];
-
-const BEHEER_LINKS = [
-  { href: "/validaties", label: "Validatielijsten" },
-  { href: "/gebruikers", label: "Gebruikers" },
-];
+type Gebruiker = {
+  naam: string;
+  email: string;
+  rol: {
+    naam: string;
+    canInslag: boolean;
+    canUitslag: boolean;
+    canVoorraad: boolean;
+    canFacturatie: boolean;
+    canReserveren: boolean;
+    canBeheer: boolean;
+  };
+};
 
 export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
   const pathname = usePathname();
-  const alleLinks = gebruiker.rol === "beheerder" ? [...LINKS, ...BEHEER_LINKS] : LINKS;
+  const { rol } = gebruiker;
+
+  const links = [
+    { href: "/dashboard", label: "Hoofdscherm", mag: true },
+    { href: "/inslag", label: "Inslag", mag: rol.canInslag },
+    { href: "/uitslag", label: "Uitslag", mag: rol.canUitslag },
+    { href: "/voorraad", label: "Voorraad", mag: rol.canVoorraad },
+    { href: "/facturatie", label: "Facturatie", mag: rol.canFacturatie },
+    { href: "/reserveren", label: "Reserveren", mag: rol.canReserveren },
+    { href: "/reserveringen", label: "Reserveringen", mag: rol.canReserveren },
+  ].filter((l) => l.mag);
+
+  const beheerLinks = rol.canBeheer
+    ? [
+        { href: "/validaties", label: "Validatielijsten" },
+        { href: "/gebruikers", label: "Gebruikers" },
+        { href: "/rollen", label: "Rollen" },
+      ]
+    : [];
 
   return (
     <div className="hidden md:flex md:w-60 md:flex-shrink-0 md:flex-col md:py-8 md:pl-6">
@@ -34,7 +51,7 @@ export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
       </div>
 
       <nav className="flex flex-col gap-1">
-        {alleLinks.map((l) => {
+        {[...links, ...beheerLinks].map((l) => {
           const actief = pathname === l.href;
           return (
             <Link
@@ -52,7 +69,8 @@ export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
 
       <div className="mt-auto pt-6 px-3">
         <div className="text-xs font-semibold text-ink">{gebruiker.naam}</div>
-        <div className="text-[11px] text-inkSoft mb-3">{gebruiker.email}</div>
+        <div className="text-[11px] text-inkSoft mb-1">{gebruiker.email}</div>
+        <div className="text-[11px] text-inkSoft mb-3">{rol.naam}</div>
         <UitloggenKnop className="text-xs font-semibold text-red-600 underline" />
       </div>
     </div>

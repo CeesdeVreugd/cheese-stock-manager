@@ -196,7 +196,7 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div className={className}>
+    <div className={`min-w-0 ${className || ""}`}>
       <label className="block text-xs font-bold text-ink mb-1.5">{label}</label>
       {children}
       {hint && <p className="text-[11px] text-inkSoft mt-1">{hint}</p>}

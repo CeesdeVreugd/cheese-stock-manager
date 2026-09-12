@@ -2,6 +2,7 @@ import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/facturatie";
 import OntgrendelGate from "@/components/ontgrendel-gate";
+import GeenToegang from "@/components/geen-toegang";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -10,7 +11,8 @@ export default async function FacturatiePage({
 }: {
   searchParams: Promise<{ week?: string }>;
 }) {
-  await vereisOntgrendeldeGebruiker();
+  const gebruiker = await vereisOntgrendeldeGebruiker();
+  if (!gebruiker.rol.canFacturatie) return <GeenToegang />;
 
   const { week } = await searchParams;
   const generatieDatum = week ? new Date(week) : huidigeGeneratieDatum();

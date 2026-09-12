@@ -31,7 +31,7 @@ export function huidigeGeneratieDatum(nu: Date = new Date()) {
 
 export function weekLabel(periode: { start: Date; eind: Date }) {
   const iso = getIsoWeekNumber(periode.start);
-  const fmt = (d: Date) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit" });
+  const fmt = (d: Date) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", timeZone: "Europe/Amsterdam" });
   return {
     week: `Week ${iso.week} · ${iso.year}`,
     range: `${fmt(periode.start)} t/m ${fmt(periode.eind)}`,

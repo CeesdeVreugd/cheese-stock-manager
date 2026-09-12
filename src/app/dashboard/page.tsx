@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionGebruikerId } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import UitloggenKnop from "@/components/uitloggen-knop";
 
 export default async function DashboardPage() {
   const gebruikerId = await getSessionGebruikerId();
@@ -21,12 +22,15 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen">
       <div className="bg-green px-6 pt-8 pb-6 rounded-b-3xl">
-        <div className="flex items-center gap-3 mb-1">
-          <img src="/logo-emblem.png" alt="" className="h-9 w-auto" />
-          <div>
-            <div className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd</div>
-            <h1 className="font-serif text-lg font-semibold text-white leading-tight">Cheese Stock Manager</h1>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-3">
+            <img src="/logo-emblem.png" alt="" className="h-9 w-auto" />
+            <div>
+              <div className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd</div>
+              <h1 className="font-serif text-lg font-semibold text-white leading-tight">Cheese Stock Manager</h1>
+            </div>
           </div>
+          <UitloggenKnop className="text-xs font-semibold text-white/70 underline" />
         </div>
         <p className="mt-4 text-sm text-white/70">Actuele voorraad</p>
         <p className="font-serif text-3xl font-semibold text-white">{boxCount} boxen · {totaalKg} kg</p>

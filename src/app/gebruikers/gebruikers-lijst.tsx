@@ -71,7 +71,7 @@ export default function GebruikersLijst({ initieel, huidigId }: { initieel: Gebr
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="naam@vanbeekkaas.nl"
+          placeholder="naam@beekvreugdkaas.nl"
           className="input"
         />
         <select value={rol} onChange={(e) => setRol(e.target.value as Gebruiker["rol"])} className="input">

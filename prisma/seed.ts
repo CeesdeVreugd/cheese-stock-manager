@@ -3,7 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL || "beheerder@vanbeekkaas.nl";
+  const email = process.env.SEED_ADMIN_EMAIL || "beheerder@beekvreugdkaas.nl";
   const naam = process.env.SEED_ADMIN_NAAM || "Beheerder";
 
   const gebruiker = await prisma.gebruiker.upsert({

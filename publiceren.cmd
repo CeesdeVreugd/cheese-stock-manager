@@ -7,8 +7,8 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 
 setlocal
 
-set "DOEL=C:\Users\cees\OneDrive - De Vreugd\Documenten\Van Beek & De Vreugd Kaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Automatisch publiceerscript: bestanden synchroniseren en opruimen ingebouwd."
+set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
+set "OMSCHRIJVING=Het standaard e-maildomein gecorrigeerd naar beekvreugdkaas.nl."
 
 echo.
 echo Bestanden bijwerken in:

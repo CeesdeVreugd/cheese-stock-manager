@@ -37,7 +37,7 @@ npm run dev         # start de app op http://localhost:3000
 ```
 
 Log in met het e-mailadres dat de seed net aanmaakte (standaard
-`beheerder@vanbeekkaas.nl`, aan te passen via `SEED_ADMIN_EMAIL` in `.env`).
+`beheerder@beekvreugdkaas.nl`, aan te passen via `SEED_ADMIN_EMAIL` in `.env`).
 Zonder `RESEND_API_KEY` verschijnt de 6-cijferige inlogcode in het terminal-venster
 waar `npm run dev` draait.
 
@@ -61,7 +61,7 @@ automatisch (Vercel levert altijd HTTPS).
 4. Klik "Deploy". Je krijgt een gratis `.vercel.app`-adres waarmee je met
    collega's kunt testen.
 5. Later, als het bevalt: in Vercel een eigen (sub)domein koppelen
-   (bijvoorbeeld `voorraad.vanbeekkaas.nl`) via een DNS-instelling bij je
+   (bijvoorbeeld `voorraad.beekvreugdkaas.nl`) via een DNS-instelling bij je
    huidige domeinregistrar — dit raakt de bestaande website niet aan.
 
 ## Wijzigingen publiceren
@@ -72,6 +72,21 @@ bestanden op die niet meer bestaan), en commit + pusht met een omschrijving
 die er al in staat. Je hoeft de uitgepakte map dus nergens specifiek neer te
 zetten — pak 'm uit, bijvoorbeeld in Downloads, en dubbelklik op
 `publiceren.cmd`. Vercel bouwt en publiceert daarna automatisch.
+
+## Webapp installeren (pc en telefoon)
+
+De app is een PWA (Progressive Web App): op pc en Android verschijnt een
+"Installeren"-bannertje bovenin (gebruikt het browsereigen installatiemechanisme
+— werkt in Chrome/Edge; Firefox desktop ondersteunt dit type installatie niet).
+Op iPhone werkt dat anders (Apple staat geen installatie-pop-up toe): daar
+toont de app een korte instructie om het via Delen → "Zet op beginscherm" te
+doen.
+
+Op schermen vanaf tabletformaat (breder dan ca. 768px) verschijnt een vaste
+zijbalk met navigatie en staat de inhoud als gecentreerde kaart in beeld,
+zodat het er op een pc niet als een uitgerekte telefoonpagina uitziet. Op
+telefoonformaat blijft het de vertrouwde, volledige-breedte "app"-ervaring.
+Uitloggen kan zowel op het mobiele hoofdscherm als in de desktop-zijbalk.
 
 ## Wat hierna nog moet gebeuren (zie het technisch ontwerpdocument)
 

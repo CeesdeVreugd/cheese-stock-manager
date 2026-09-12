@@ -54,6 +54,7 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col min-h-screen px-6 pt-10 pb-8">
       <div className="mb-8">
+        <img src="/logo-emblem.png" alt="Van Beek & De Vreugd" className="h-14 w-auto mb-3" />
         <div className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd</div>
         <h1 className="font-serif text-2xl font-semibold text-green">
           {step === "email" ? "Welkom terug" : "Check je e-mail"}

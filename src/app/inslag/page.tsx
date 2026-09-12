@@ -15,7 +15,11 @@ export default function InslagPage() {
   const transactionId = useMemo(newTransactionId, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [leveranciers, setLeveranciers] = useState<{ id: string; naam: string }[]>([]);
+  const [validaties, setValidaties] = useState<{
+    productafkomst: { id: string; naam: string }[];
+    proces: { id: string; naam: string }[];
+    model: { id: string; naam: string }[];
+  }>({ productafkomst: [], proces: [], model: [] });
   const [form, setForm] = useState({
     productafkomst: "",
     proces: "",
@@ -28,10 +32,15 @@ export default function InslagPage() {
   });
 
   useEffect(() => {
-    fetch("/api/leveranciers")
-      .then((r) => r.json())
-      .then((d) => setLeveranciers(d.leveranciers || []))
-      .catch(() => setLeveranciers([]));
+    Promise.all(
+      (["productafkomst", "proces", "model"] as const).map((soort) =>
+        fetch(`/api/validaties?soort=${soort}`)
+          .then((r) => r.json())
+          .then((d) => [soort, d.items || []] as const)
+      )
+    ).then((paren) => {
+      setValidaties((v) => ({ ...v, ...Object.fromEntries(paren) }));
+    });
   }, []);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
@@ -86,26 +95,39 @@ export default function InslagPage() {
             <option value="" disabled>
               Kies productafkomst
             </option>
-            {leveranciers.map((l) => (
+            {validaties.productafkomst.map((l) => (
               <option key={l.id} value={l.naam}>
                 {l.naam}
               </option>
             ))}
           </select>
-          {leveranciers.length === 0 && (
-            <p className="text-[11px] text-inkSoft mt-1">
-              Nog geen leveranciers ingesteld —{" "}
-              <Link href="/leveranciers" className="underline">
-                beheer leveranciers
-              </Link>
-            </p>
-          )}
+          {validaties.productafkomst.length === 0 && <LeegHint />}
         </Field>
         <Field label="Proces">
-          <input required value={form.proces} onChange={(e) => update("proces", e.target.value)} className="input" />
+          <select required value={form.proces} onChange={(e) => update("proces", e.target.value)} className="input">
+            <option value="" disabled>
+              Kies proces
+            </option>
+            {validaties.proces.map((l) => (
+              <option key={l.id} value={l.naam}>
+                {l.naam}
+              </option>
+            ))}
+          </select>
+          {validaties.proces.length === 0 && <LeegHint />}
         </Field>
         <Field label="Model">
-          <input required value={form.model} onChange={(e) => update("model", e.target.value)} className="input" />
+          <select required value={form.model} onChange={(e) => update("model", e.target.value)} className="input">
+            <option value="" disabled>
+              Kies model
+            </option>
+            {validaties.model.map((l) => (
+              <option key={l.id} value={l.naam}>
+                {l.naam}
+              </option>
+            ))}
+          </select>
+          {validaties.model.length === 0 && <LeegHint />}
         </Field>
         <Field label="Partijcode" hint="10 cijfers">
           <input
@@ -169,5 +191,16 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       {children}
       {hint && <p className="text-[11px] text-inkSoft mt-1">{hint}</p>}
     </div>
+  );
+}
+
+function LeegHint() {
+  return (
+    <p className="text-[11px] text-inkSoft mt-1">
+      Nog niets ingesteld —{" "}
+      <Link href="/validaties" className="underline">
+        beheer validatielijsten
+      </Link>
+    </p>
   );
 }

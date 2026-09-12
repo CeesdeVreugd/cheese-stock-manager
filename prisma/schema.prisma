@@ -126,10 +126,21 @@ model DagVoorraadSnapshot {
   @@unique([datum, partijcode, productafkomst, model])
 }
 
-// Validatielijst productafkomst, zie §6 "Leveranciers"-scherm (alleen beheerder)
-model Leverancier {
-  id        String   @id @default(uuid())
-  naam      String   @unique
-  actief    Boolean  @default(true)
-  createdAt DateTime @default(now())
+// Validatielijsten voor Productafkomst, Proces en Model (§3.1 "fk naar
+// validaties" / §6 "Leveranciers"-scherm) — één generieke tabel i.p.v. drie
+// losse, met een "soort" om ze uit elkaar te houden.
+enum ValidatieSoort {
+  productafkomst
+  proces
+  model
+}
+
+model ValidatieItem {
+  id        String         @id @default(uuid())
+  soort     ValidatieSoort
+  naam      String
+  actief    Boolean        @default(true)
+  createdAt DateTime       @default(now())
+
+  @@unique([soort, naam])
 }

@@ -41,9 +41,10 @@ Log in met het e-mailadres dat de seed net aanmaakte (standaard
 Zonder `RESEND_API_KEY` verschijnt de 6-cijferige inlogcode in het terminal-venster
 waar `npm run dev` draait.
 
-Voeg daarna via **Leveranciers** (in het hoofdscherm, alleen zichtbaar voor de
-rol beheerder) minimaal één productafkomst toe — die lijst voedt de dropdown
-in het inslagformulier.
+Voeg daarna via **Validatielijsten** (in het hoofdscherm, alleen zichtbaar voor
+de rol beheerder) minimaal één Productafkomst/Proces/Model toe — die lijsten
+voeden de dropdowns in het inslagformulier. Via **Gebruikers** (ook
+beheerder-only) maak je collega's aan met naam, e-mail en rol.
 
 **Over QR-scannen:** camera-toegang in de browser vereist HTTPS, met
 `localhost` als uitzondering. Lokaal testen (`npm run dev`) werkt dus gewoon;
@@ -63,11 +64,18 @@ automatisch (Vercel levert altijd HTTPS).
    (bijvoorbeeld `voorraad.vanbeekkaas.nl`) via een DNS-instelling bij je
    huidige domeinregistrar — dit raakt de bestaande website niet aan.
 
+## Wijzigingen publiceren
+
+Na de eerste keer opzetten (hierboven) kun je bij elke volgende aanpassing
+gewoon dubbelklikken op **`publiceren.cmd`** in deze map. Het script vraagt om
+een korte omschrijving en regelt daarna zelf `git add`, `git commit` en
+`git push` — Vercel bouwt en publiceert de nieuwe versie vervolgens automatisch.
+
 ## Wat hierna nog moet gebeuren (zie het technisch ontwerpdocument)
 
 - Labelprinten naar een fysieke printer (§7.1: Raspberry Pi-printstation of Zebra Browser Print) — de QR-code zelf wordt al gegenereerd en getoond (na inslag, en op elke box in de voorraadlijst)
 - Geplande (cron) taak die de facturatie automatisch elke donderdag klaarzet, i.p.v. nu op-aanvraag berekend — zie §8.1 over de afhankelijkheid met de dagsnapshot
-- Rollen/rechten verder afdwingen per scherm (nu alleen leveranciersbeheer aan de rol beheerder gekoppeld)
+- Rollen/rechten verder afdwingen per scherm (nu zijn Validatielijsten en Gebruikers beheerder-only; de rest is gelijk voor iedere ingelogde gebruiker)
 - App-pincode voor snelle her-toegang (§4.3) — nu alleen de volledige e-mail+code-login gebouwd
 - Overstap van gratis tiers naar betaalde tiers zodra dit meer dan een proef is
   (zie §11 van het ontwerpdocument voor de kosteninschatting)

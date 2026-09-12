@@ -12,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ boxI
   const { boxId } = await params;
   const png = await QRCode.toBuffer(boxId, { type: "png", margin: 1, width: 320 });
 
-  return new NextResponse(new Uint8Array(png), {
+  return new NextResponse(png, {
     headers: {
       "Content-Type": "image/png",
       "Cache-Control": "public, max-age=31536000, immutable",

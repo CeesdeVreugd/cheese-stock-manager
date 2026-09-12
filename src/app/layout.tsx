@@ -1,9 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Cheese Stock Manager",
   description: "Van Beek & De Vreugd — voorraadbeheer",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Cheese Stock Manager",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#223B2C",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -44,7 +44,10 @@ export default async function FacturatiePage({
           <Link href="/dashboard" className="text-sm font-semibold text-white/80">
             ‹ Terug
           </Link>
-          <div className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd</div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd</span>
+            <img src="/logo-emblem.png" alt="" className="h-6 w-auto" />
+          </div>
         </div>
         <h1 className="font-serif text-xl font-semibold text-white mb-4">Facturatie</h1>
         <div className="flex items-center justify-between">

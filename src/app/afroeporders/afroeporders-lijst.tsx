@@ -96,7 +96,7 @@ export default function AfroeporderLijst({ initieel }: { initieel: Afroep[] }) {
             {r.status === "open" && (
               <div className="flex gap-2 mt-2">
                 <Link
-                  href={`/uitslag?boxId=${r.boxId}&afroepId=${r.id}`}
+                  href={`/uitslag?boxId=${r.boxId}&afroepId=${r.id}&volledigeBox=${r.volledigeBox}${r.aantalKazen ? `&aantalKazen=${r.aantalKazen}` : ""}`}
                   className="flex-1 text-center rounded-lg bg-gold text-white text-xs font-semibold py-2"
                 >
                   Uitvoeren
@@ -148,7 +148,7 @@ export default function AfroeporderLijst({ initieel }: { initieel: Afroep[] }) {
                 <td className="py-2.5 px-4 text-right">
                   {r.status === "open" && (
                     <div className="flex gap-3 justify-end">
-                      <Link href={`/uitslag?boxId=${r.boxId}&afroepId=${r.id}`} className="text-xs font-semibold text-green underline">
+                      <Link href={`/uitslag?boxId=${r.boxId}&afroepId=${r.id}&volledigeBox=${r.volledigeBox}${r.aantalKazen ? `&aantalKazen=${r.aantalKazen}` : ""}`} className="text-xs font-semibold text-green underline">
                         Uitvoeren
                       </Link>
                       <button

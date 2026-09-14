@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Dubbel afroepen van dezelfde box is nu niet meer mogelijk; beschikbaarheid wordt exact getoond en server-side afgedwongen."
+set "OMSCHRIJVING=Uitvoeren van een deel-afroep zet Uitslag nu terecht op 'Aantal kazen' i.p.v. altijd 'Hele box'."
 
 echo.
 echo ============================================

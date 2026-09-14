@@ -23,16 +23,25 @@ export default function UitslagForm({
   boxen,
   voorgeselecteerdeBox,
   afroepId,
+  afroepVolledigeBox,
+  afroepAantalKazen,
 }: {
   boxen: Box[];
   voorgeselecteerdeBox?: Box | null;
   afroepId?: string | null;
+  afroepVolledigeBox?: boolean;
+  afroepAantalKazen?: number | null;
 }) {
   const router = useRouter();
   const transactionId = useMemo(newTransactionId, []);
   const [box, setBox] = useState<Box | null>(voorgeselecteerdeBox ?? null);
-  const [uitslagType, setUitslagType] = useState<"volledig" | "klein">("volledig");
-  const [aantalKazenUit, setAantalKazenUit] = useState("");
+  // Komt dit vanuit een afroep voor een deel van de box? Dan meteen op
+  // "Aantal kazen" zetten met dat aantal, in plaats van standaard "hele box"
+  // — anders zou Uitvoeren per ongeluk de hele box laten uitslaan terwijl
+  // er bijvoorbeeld maar 10 van de 20 waren afgeroepen.
+  const komtVanDeelAfroep = !!afroepId && afroepVolledigeBox === false && !!afroepAantalKazen;
+  const [uitslagType, setUitslagType] = useState<"volledig" | "klein">(komtVanDeelAfroep ? "klein" : "volledig");
+  const [aantalKazenUit, setAantalKazenUit] = useState(komtVanDeelAfroep ? String(afroepAantalKazen) : "");
   const [tarief, setTarief] = useState<"standaard" | "geetiketteerd">("standaard");
   const [opmerking, setOpmerking] = useState("");
   const [busy, setBusy] = useState(false);

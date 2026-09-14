@@ -21,7 +21,8 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
-      if (!res.ok) throw new Error("Er ging iets mis, probeer het opnieuw.");
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Er ging iets mis, probeer het opnieuw.");
       setStep("code");
     } catch (err: any) {
       setError(err.message);

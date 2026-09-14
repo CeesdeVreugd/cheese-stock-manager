@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Inlogcodes kunnen nu ook via Outlook/Microsoft 365 verstuurd worden (naast Resend)."
+set "OMSCHRIJVING=Inlogscherm toont nu de echte foutmelding i.p.v. altijd dezelfde generieke tekst."
 
 echo.
 echo ============================================

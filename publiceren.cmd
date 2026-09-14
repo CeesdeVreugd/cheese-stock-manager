@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Wie pushmeldingen bij afroeporders krijgt is nu instelbaar per rol, via Rollen."
+set "OMSCHRIJVING=Afroepen faalt niet meer als pushmeldingen niet geconfigureerd zijn; Lezer-rol komt niet meer terug na verwijderen; Activiteiten-rechten hersteld."
 
 echo.
 echo ============================================

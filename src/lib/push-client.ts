@@ -21,12 +21,15 @@ export async function huidigPushAbonnement() {
 
 /** Vraagt toestemming (indien nog niet gevraagd) en abonneert dit toestel. */
 export async function schakelPushIn() {
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (!publicKey) {
+    throw new Error("Pushmeldingen zijn nog niet ingesteld op de server (VAPID-sleutel ontbreekt).");
+  }
   const permissie = await Notification.requestPermission();
   if (permissie !== "granted") {
     throw new Error("Geen toestemming gekregen voor meldingen.");
   }
   const reg = await navigator.serviceWorker.ready;
-  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
   const sub = await reg.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: b64ToUint8Array(publicKey),

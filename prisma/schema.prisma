@@ -34,6 +34,12 @@ model Rol {
   canFacturatie   Boolean  @default(false)
   canReserveren   Boolean  @default(false)
   canBeheer       Boolean  @default(false) // validatielijsten, gebruikers én rollen
+  canActiviteiten Boolean  @default(false) // activiteitenlog (§ audit) — eigen vinkje, los van "Beheer"
+  // Los van canReserveren instelbaar: bepaalt of iemand met deze rol een
+  // pushmelding krijgt bij een nieuwe afroeporder. Zo kan een beheerder
+  // bijvoorbeeld kiezen dat alleen "Magazijn" meldingen krijgt en niet elke
+  // rol die toevallig ook afroep-rechten heeft.
+  ontvangtAfroepMeldingen Boolean @default(true)
   createdAt       DateTime @default(now())
 
   gebruikers Gebruiker[]
@@ -57,7 +63,9 @@ model Gebruiker {
   devicePincodes DevicePincode[]
   inslagLogs     InslagLog[] @relation("InslagDoor")
   uitslagLogs    UitslagLog[] @relation("UitslagDoor")
-  reserveringen  Reservering[]
+  afroepen  Afroep[]
+  afroepenAfgehandeld Afroep[] @relation("AfroepAfgehandeldDoor")
+  pushSubscriptions PushSubscription[]
 }
 
 // Eenmalige inlogcode, zie ontwerpdocument §3.5 / §4.2
@@ -135,6 +143,8 @@ model UitslagLog {
   uitslagtijd    DateTime      @default(now())
   gebruiker      Gebruiker?    @relation("UitslagDoor", fields: [gebruikerId], references: [id], onDelete: SetNull)
   gebruikerId    String?
+  afroep         Afroep?       @relation(fields: [afroepId], references: [id], onDelete: SetNull)
+  afroepId       String?       @map("reserveringId")
 }
 
 // Dagelijkse aggregatie, zie §3.3 (basis voor kg-dagen-opslagberekening)
@@ -170,26 +180,42 @@ model ValidatieItem {
   @@unique([soort, naam])
 }
 
-enum ReserveringStatus {
+enum AfroepStatus {
   open
   uitgevoerd
   geannuleerd
+
+  @@map("ReserveringStatus")
 }
 
-// Reservering van (een deel van) een box door een verkoper op de vloer,
-// bedoeld voor uitslag naar de groothandel. Puur informatief bovenop de
-// bestaande voorraad — beïnvloedt Box/InslagLog/UitslagLog niet vanzelf.
-model Reservering {
-  id              String            @id @default(uuid())
+// Afroep van (een deel van) een box door een verkoper op de vloer, bedoeld
+// voor uitslag naar de groothandel. Puur informatief bovenop de bestaande
+// voorraad — beïnvloedt Box/InslagLog/UitslagLog niet vanzelf.
+// @@map houdt de onderliggende tabelnaam "Reservering" aan (zo bleef deze
+// hernoeming een risicoloze wijziging, zonder migratie/reset van bestaande
+// afroeporders).
+model Afroep {
+  id              String       @id @default(uuid())
   boxId           Int
-  volledigeBox    Boolean           @default(true)
-  aantalKazen     Int?              // alleen gevuld als volledigeBox = false
+  volledigeBox    Boolean      @default(true)
+  aantalKazen     Int?         // alleen gevuld als volledigeBox = false
   klant           String?
   opmerking       String?
-  status          ReserveringStatus @default(open)
-  gebruiker       Gebruiker         @relation(fields: [gebruikerId], references: [id])
+  status          AfroepStatus @default(open)
+  gebruiker       Gebruiker    @relation(fields: [gebruikerId], references: [id])
   gebruikerId     String
-  createdAt       DateTime          @default(now())
+  createdAt       DateTime     @default(now())
+
+  // Wie de afroep op "uitgevoerd" (of "geannuleerd") heeft gezet, en
+  // wanneer — apart van gebruiker/createdAt hierboven, dat is wie 'm
+  // aanmaakte. Optioneel: leeg zolang de status nog "open" is.
+  afgehandeldDoor   Gebruiker? @relation("AfroepAfgehandeldDoor", fields: [afgehandeldDoorId], references: [id], onDelete: SetNull)
+  afgehandeldDoorId String?
+  afgehandeldOp     DateTime?
+
+  uitslagLogs UitslagLog[]
+
+  @@map("Reservering")
 }
 
 // Activiteitenlog voor het "wie deed wat, wanneer"-overzicht. Bewust met
@@ -204,4 +230,16 @@ model AuditLog {
   actie          String
   omschrijving   String
   createdAt      DateTime @default(now())
+}
+
+// Eén rij per toestel dat meldingen heeft ingeschakeld (§ pushmeldingen bij
+// afroeporders). Een gebruiker kan op meerdere toestellen ingeschreven staan.
+model PushSubscription {
+  id          String    @id @default(uuid())
+  gebruiker   Gebruiker @relation(fields: [gebruikerId], references: [id], onDelete: Cascade)
+  gebruikerId String
+  endpoint    String    @unique
+  p256dh      String
+  auth        String
+  createdAt   DateTime  @default(now())
 }

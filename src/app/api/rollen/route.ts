@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 
-const PERMISSIE_VELDEN = ["canInslag", "canUitslag", "canVoorraad", "canFacturatie", "canReserveren", "canBeheer"] as const;
+const PERMISSIE_VELDEN = ["canInslag", "canUitslag", "canVoorraad", "canFacturatie", "canReserveren", "canBeheer", "canActiviteiten", "ontvangtAfroepMeldingen"] as const;
 
 function pakPermissies(body: any) {
   const data: Record<string, boolean> = {};

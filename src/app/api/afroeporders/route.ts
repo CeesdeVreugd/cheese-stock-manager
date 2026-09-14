@@ -2,27 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 import { logActiviteit } from "@/lib/audit";
+import { stuurPushNaarRecht } from "@/lib/push";
 
 export async function GET(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
-  if (!gebruiker.rol.canReserveren) return NextResponse.json({ error: "Geen rechten voor reserveren" }, { status: 403 });
+  if (!gebruiker.rol.canReserveren) return NextResponse.json({ error: "Geen rechten voor afroep" }, { status: 403 });
 
   const statusParam = req.nextUrl.searchParams.get("status");
-  const reserveringen = await prisma.reservering.findMany({
+  const afroeporders = await prisma.afroep.findMany({
     where: statusParam ? { status: statusParam as any } : undefined,
-    include: { gebruiker: { select: { naam: true } } },
+    include: { gebruiker: { select: { naam: true } }, afgehandeldDoor: { select: { naam: true } } },
     orderBy: { createdAt: "desc" },
     take: 200,
   });
 
-  return NextResponse.json({ reserveringen });
+  return NextResponse.json({ afroeporders });
 }
 
 export async function POST(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
-  if (!gebruiker.rol.canReserveren) return NextResponse.json({ error: "Geen rechten voor reserveren" }, { status: 403 });
+  if (!gebruiker.rol.canReserveren) return NextResponse.json({ error: "Geen rechten voor afroep" }, { status: 403 });
 
   const { boxId, volledigeBox, aantalKazen, klant, opmerking } = await req.json();
 
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const reservering = await prisma.reservering.create({
+  const afroep = await prisma.afroep.create({
     data: {
       boxId: box.boxId,
       volledigeBox: !!volledigeBox,
@@ -56,9 +57,21 @@ export async function POST(req: NextRequest) {
 
   await logActiviteit(
     gebruiker,
-    "Reservering",
-    `Box #${box.boxId} gereserveerd (${volledigeBox ? "hele box" : `${aantalKazen} kazen`})${klant ? ` voor ${klant}` : ""}`
+    "Afroep",
+    `Box #${box.boxId} afgeroepen (${volledigeBox ? "hele box" : `${aantalKazen} kazen`})${klant ? ` voor ${klant}` : ""}`
   );
 
-  return NextResponse.json({ reservering });
+  // Iedereen die afroeporders mag uitvoeren een seintje geven — behalve
+  // degene die 'm net zelf aanmaakte, die hoeft daar geen melding over.
+  await stuurPushNaarRecht(
+    "ontvangtAfroepMeldingen",
+    {
+      title: "Nieuwe afroeporder",
+      body: `Box #${box.boxId}${klant ? ` voor ${klant}` : ""} (${volledigeBox ? "hele box" : `${aantalKazen} kazen`})`,
+      url: "/afroeporders",
+    },
+    gebruiker.id
+  );
+
+  return NextResponse.json({ afroep });
 }

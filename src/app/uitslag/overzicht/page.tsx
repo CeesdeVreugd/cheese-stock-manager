@@ -12,6 +12,7 @@ export default async function UitslagOverzichtPage() {
   const regels = await prisma.uitslagLog.findMany({
     orderBy: { uitslagtijd: "desc" },
     take: 300,
+    include: { afroep: { select: { klant: true } } },
   });
 
   return (
@@ -32,7 +33,14 @@ export default async function UitslagOverzichtPage() {
               <div key={r.id} className="rounded-2xl border-[1.5px] border-line bg-white p-3.5">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-serif font-semibold text-green">Box #{r.boxId}</span>
-                  <span className="text-xs font-semibold">{(r.nettoGramUit / 1000).toFixed(1)} kg</span>
+                  <div className="flex items-center gap-1.5">
+                    {r.afroep && (
+                      <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-goldSoft text-goldDeep">
+                        Afroep
+                      </span>
+                    )}
+                    <span className="text-xs font-semibold">{(r.nettoGramUit / 1000).toFixed(1)} kg</span>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-y-1 text-xs">
                   <div className="text-inkSoft">PRODUCTAFKOMST</div>
@@ -71,6 +79,7 @@ export default async function UitslagOverzichtPage() {
                   <th className="py-3 px-4 font-semibold">Productafkomst</th>
                   <th className="py-3 px-4 font-semibold">Model</th>
                   <th className="py-3 px-4 font-semibold">Box</th>
+                  <th className="py-3 px-4 font-semibold">Herkomst</th>
                   <th className="py-3 px-4 font-semibold">Uitslagtijd</th>
                   <th className="py-3 px-4 font-semibold">Type</th>
                   <th className="py-3 px-4 font-semibold">Tarief</th>
@@ -85,6 +94,15 @@ export default async function UitslagOverzichtPage() {
                     <td className="py-2.5 px-4">{r.productafkomst}</td>
                     <td className="py-2.5 px-4">{r.model}</td>
                     <td className="py-2.5 px-4 font-serif font-semibold text-green">#{r.boxId}</td>
+                    <td className="py-2.5 px-4">
+                      {r.afroep ? (
+                        <span className="text-xs font-semibold rounded-full px-2.5 py-1 bg-goldSoft text-goldDeep">
+                          Afroep{r.afroep.klant ? ` · ${r.afroep.klant}` : ""}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-inkSoft">—</span>
+                      )}
+                    </td>
                     <td className="py-2.5 px-4">{fmtDatumTijd(r.uitslagtijd)}</td>
                     <td className="py-2.5 px-4 capitalize">{r.uitslagType}</td>
                     <td className="py-2.5 px-4">{r.tarief === "geetiketteerd" ? "Geëtiketteerd" : "Standaard"}</td>

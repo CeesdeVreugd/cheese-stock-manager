@@ -113,13 +113,69 @@ na het volledig afsluiten van de browser, is een nieuwe e-mailcode nodig.
 ## Activiteitenlog en pincode resetten
 
 Onder **Activiteiten** (beheerder-only) staat een doorzoekbaar logboek van
-inslag, uitslag, reserveringen en gebruikersbeheer — wie deed wat, en
+inslag, uitslag, afroeporders en gebruikersbeheer — wie deed wat, en
 wanneer. Verstandig om af en toe te bekijken, vooral bij meerdere mensen met
 toegang.
 
 Bij **Gebruikers** kan een beheerder nu ook iemands pincode resetten (bv. bij
 een kwijtgeraakt of vervangen toestel) — die persoon moet dan bij de
 volgende app-opening weer volledig met e-mail + code inloggen.
+
+## Afroep uitvoeren
+
+Bij een openstaande afroeporder (`/afroeporders`) staat een knop **Uitvoeren**
+— die opent Uitslag met de juiste box al klaargezet. Na bevestigen wordt de
+afroeporder automatisch op "uitgevoerd" gezet, mét wie en wanneer, en het
+uitslagoverzicht toont een "Afroep"-label bij regels die zo zijn afgehandeld.
+Annuleren kan nog steeds direct vanuit Afroeporders, zonder via Uitslag te
+hoeven.
+
+## Pushmeldingen bij nieuwe afroeporders
+
+Zodra iemand een afroeporder aanmaakt, krijgt iedereen wiens **rol** het
+vinkje "Pushmelding bij nieuwe afroeporder" aan heeft staan (behalve de
+aanmaker zelf) een echte systeemmelding — op telefoon én desktop, ook als de
+app niet openstaat. Een beheerder stelt dit in via **Rollen**: dit vinkje
+staat los van het recht om zelf af te roepen, dus een rol kan bijvoorbeeld
+wél meldingen krijgen zonder zelf te mogen afroepen (of andersom).
+
+Voor gebruikers met dit vinkje staat het **standaard aan**: bij het openen
+van de app wordt automatisch geprobeerd te abonneren (de browser vraagt
+daarbij zelf om toestemming). Uitzetten (of opnieuw aanzetten) kan iedereen
+zelf via **Profiel** → Meldingen. Daarnaast blijft er ook een bannertje op
+het hoofdscherm en een getal-badge bij "Afroeporders" in de zijbalk staan,
+voor wie meldingen heeft uitgezet of de toestemming heeft geweigerd.
+
+Dit gebruikt het Web Push-protocol met een VAPID-sleutelpaar (al ingevuld in
+`.env.example`, werkt meteen). Wil je je eigen sleutelpaar? Draai
+`node scripts/generate-vapid-keys.js` en zet de uitkomst in `.env` én in
+Vercel's environment variables (let op: `NEXT_PUBLIC_VAPID_PUBLIC_KEY` moet
+zowel lokaal als op Vercel exact hetzelfde zijn als `VAPID_PRIVATE_KEY`,
+anders werkt het abonneren niet meer).
+
+## Naamgeving: Afroep(orders), niet Reservering(en)
+
+Wat eerst "Reserveren"/"Reserveringen" heette, heet nu overal **Afroepen**
+(het scherm om iets vast te leggen) en **Afroeporders** (het overzicht) —
+paginanaam, route, knoppen, statuslabels en de rol-rechten zijn allemaal
+bijgewerkt. Achter de schermen heet het Prisma-model bewust nog steeds
+`Afroep` in de code maar is gekoppeld aan dezelfde onderliggende
+databasetabel als voorheen (via `@@map`) — zo was deze hernoeming een
+risicoloze wijziging, zonder een migratie die bestaande afroeporders had
+kunnen wissen.
+
+## Rechten per scherm — ook voor nieuwe modules
+
+Elke module heeft een eigen aan/uit-vinkje in **Rollen**, los van de algemene
+"Beheer"-rol (zo ook Activiteiten: `canActiviteiten`). Dit is de vaste
+werkwijze vanaf nu: elk nieuw scherm krijgt zijn eigen recht in het
+rollen-systeem, in plaats van generieke rechten te hergebruiken.
+
+## Standaard-beheerder alleen bij een lege database
+
+`db:seed` maakt `beheerder@beekvreugdkaas.nl` alleen nog aan als er nog
+helemaal geen gebruikers bestaan (bootstrap-geval). Bestaande gebruikers
+worden met rust gelaten.
 
 ## Wat hierna nog moet gebeuren (zie het technisch ontwerpdocument)
 
@@ -138,16 +194,15 @@ bijvoorbeeld een rol "Alleen voorraad" gemaakt worden die verder nergens bij
 kan. De rechten worden zowel op elk scherm als in de bijbehorende API's
 gecontroleerd, niet alleen verborgen in het menu.
 
-## Reserveringsmodule
+## Afroepmodule
 
-Nieuw: verkopers kunnen via **Reserveren** een box scannen of opzoeken en
-vastleggen dat (een deel van) de box gereserveerd is voor een groothandel-
-klant. Dit past de voorraad nog niet aan — het is puur een aankondiging,
-zichtbaar via een "Gereserveerd"-label in Voorraad en in het overzicht
-**Reserveringen**, waar een reservering afgerond of geannuleerd kan worden.
-De daadwerkelijke koppeling met Uitslag (bijvoorbeeld automatisch afronden
-zodra de gereserveerde hoeveelheid ook echt is uitgeslagen) is een logische
-vervolgstap.
+Verkopers kunnen via **Afroepen** een box scannen of opzoeken en vastleggen
+dat (een deel van) de box is afgeroepen voor een groothandelklant. Dit past
+de voorraad nog niet aan — het is een aankondiging, zichtbaar via een
+"Afgeroepen"-label in Voorraad en in het overzicht **Afroeporders**. De
+koppeling met Uitslag is inmiddels wél gelegd: de knop "Uitvoeren" bij een
+open afroeporder opent Uitslag met de juiste box klaar, en rondt de
+afroeporder na bevestigen automatisch af (zie "Afroep uitvoeren" hierboven).
 
 ## Een opmerking over de opslagberekening (kg-dagen)
 

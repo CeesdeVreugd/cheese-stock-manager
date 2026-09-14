@@ -17,14 +17,14 @@ type Box = {
 
 type Klant = { id: string; naam: string };
 
-export default function ReserverenForm({
+export default function AfroepenForm({
   boxen,
   klanten,
-  gereserveerdeBoxIds,
+  afgeroepenBoxIds,
 }: {
   boxen: Box[];
   klanten: Klant[];
-  gereserveerdeBoxIds: number[];
+  afgeroepenBoxIds: number[];
 }) {
   const router = useRouter();
   const [box, setBox] = useState<Box | null>(null);
@@ -42,7 +42,7 @@ export default function ReserverenForm({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/reserveringen", {
+      const res = await fetch("/api/afroeporders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -54,7 +54,7 @@ export default function ReserverenForm({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Reserveren mislukt");
+      if (!res.ok) throw new Error(data.error || "Afroepen mislukt");
       setGelukt(true);
       router.refresh();
     } catch (err: any) {
@@ -64,7 +64,7 @@ export default function ReserverenForm({
     }
   }
 
-  function nieuweReservering() {
+  function nieuweAfroep() {
     setBox(null);
     setVolledigeBox(true);
     setAantalKazen("");
@@ -79,26 +79,26 @@ export default function ReserverenForm({
         <Link href="/dashboard" className="text-sm font-semibold text-green">
           ‹ Terug
         </Link>
-        <h1 className="font-serif font-semibold text-green md:text-lg">Reserveren</h1>
+        <h1 className="font-serif font-semibold text-green md:text-lg">Afroepen</h1>
         <div className="w-12" />
       </div>
 
       <div className="flex-1 overflow-auto px-5 pb-6 md:px-8 flex flex-col gap-4">
         {gelukt && (
           <div className="flex flex-col items-center text-center gap-3 mt-10">
-            <p className="font-serif text-xl font-semibold text-green">Reservering vastgelegd</p>
+            <p className="font-serif text-xl font-semibold text-green">Afroep vastgelegd</p>
             <p className="text-sm text-inkSoft max-w-xs">
-              Box #{box?.boxId} is gereserveerd{klant ? ` voor ${klant}` : ""}. Zichtbaar in het reserveringenoverzicht
+              Box #{box?.boxId} is afgeroepen{klant ? ` voor ${klant}` : ""}. Zichtbaar bij afroeporders
               en met een label in Voorraad.
             </p>
             <div className="flex gap-3 mt-2">
               <button
-                onClick={nieuweReservering}
+                onClick={nieuweAfroep}
                 className="rounded-xl border-[1.5px] border-line bg-white px-4 py-2.5 text-sm font-semibold text-green"
               >
-                Nog een reservering
+                Nog een afroep
               </button>
-              <Link href="/reserveringen" className="rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-white">
+              <Link href="/afroeporders" className="rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-white">
                 Naar overzicht
               </Link>
             </div>
@@ -108,7 +108,7 @@ export default function ReserverenForm({
         {!gelukt && !box && (
           <>
             <p className="text-xs font-bold text-ink">Kies een box</p>
-            <BoxKiezer boxen={boxen} onSelect={setBox} gereserveerdeBoxIds={gereserveerdeBoxIds} />
+            <BoxKiezer boxen={boxen} onSelect={setBox} afgeroepenBoxIds={afgeroepenBoxIds} />
           </>
         )}
 
@@ -139,7 +139,7 @@ export default function ReserverenForm({
 
             <div className="min-w-0 flex flex-col gap-4">
               <div>
-                <p className="text-xs font-bold text-ink mb-1.5">Reservering</p>
+                <p className="text-xs font-bold text-ink mb-1.5">Afroep</p>
                 <div className="flex rounded-xl bg-goldSoft p-1">
                   <button
                     type="button"
@@ -204,7 +204,7 @@ export default function ReserverenForm({
               </div>
 
               <button disabled={busy} className="w-full rounded-xl bg-gold py-3.5 font-bold text-white shadow-md disabled:opacity-60">
-                {busy ? "Vastleggen…" : "Reservering vastleggen"}
+                {busy ? "Vastleggen…" : "Afroep vastleggen"}
               </button>
               <p className="text-[11px] text-inkSoft text-center">
                 Dit past de voorraad nog niet aan — de daadwerkelijke uitslag gebeurt apart.

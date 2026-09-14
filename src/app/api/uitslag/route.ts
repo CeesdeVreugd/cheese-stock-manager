@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   if (!gebruiker.rol.canUitslag) return NextResponse.json({ error: "Geen rechten voor uitslag" }, { status: 403 });
 
   const body = await req.json();
-  const { transactionId, boxId, uitslagType, tarief, aantalKazenUit, opmerking } = body;
+  const { transactionId, boxId, uitslagType, tarief, aantalKazenUit, opmerking, afroepId } = body;
 
   if (!transactionId || !boxId) {
     return NextResponse.json({ error: "Ontbrekende gegevens" }, { status: 400 });
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
           nettoGramUit: gramUit,
           opmerking: opmerking || null,
           gebruikerId: gebruiker.id,
+          afroepId: afroepId || null,
         },
       });
 
@@ -67,6 +68,16 @@ export async function POST(req: NextRequest) {
         });
       }
 
+      // Als deze uitslag een afroeporder afrondt: die meteen op "uitgevoerd"
+      // zetten, met wie en wanneer — scheelt een losse handeling in
+      // Afroeporders.
+      if (afroepId) {
+        await tx.afroep.update({
+          where: { id: afroepId },
+          data: { status: "uitgevoerd", afgehandeldDoorId: gebruiker.id, afgehandeldOp: new Date() },
+        });
+      }
+
       return { herhaling: false, boxId: box.boxId, aantalUit };
     });
 
@@ -74,7 +85,7 @@ export async function POST(req: NextRequest) {
       await logActiviteit(
         gebruiker,
         "Uitslag",
-        `Box #${result.boxId} — ${uitslagType} (${result.aantalUit} kazen, ${tarief})`
+        `Box #${result.boxId} — ${uitslagType} (${result.aantalUit} kazen, ${tarief})${afroepId ? " · via afroep" : ""}`
       );
     }
 

@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { getSessionGebruiker } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import AppSidebar from "@/components/app-sidebar";
 import RegisterSW from "@/components/register-sw";
 import InstallBanner from "@/components/install-banner";
+import AutoMeldingen from "@/components/auto-meldingen";
 
 export const metadata: Metadata = {
   title: "Cheese Stock Manager",
@@ -22,6 +24,8 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const gebruiker = await getSessionGebruiker();
+  const openAfroepen =
+    gebruiker && gebruiker.rol?.canReserveren ? await prisma.afroep.count({ where: { status: "open" } }) : 0;
 
   return (
     <html lang="nl">
@@ -35,6 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="bg-cream text-ink font-sans">
         <RegisterSW />
+        {gebruiker && gebruiker.rol?.ontvangtAfroepMeldingen && <AutoMeldingen />}
         {/*
           Twee écht verschillende indelingen, geen uitgerekte telefoonpagina:
           - Mobiel (< md): volle breedte, één kolom — de vertrouwde "telefoon-app"-flow.
@@ -45,7 +50,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         */}
         <div className="md:flex md:min-h-screen">
           {gebruiker && gebruiker.rol && (
-            <AppSidebar gebruiker={{ naam: gebruiker.naam, email: gebruiker.email, rol: gebruiker.rol }} />
+            <AppSidebar
+              gebruiker={{ naam: gebruiker.naam, email: gebruiker.email, rol: gebruiker.rol }}
+              openAfroepen={openAfroepen}
+            />
           )}
           <div className="md:flex-1 md:min-w-0">
             <InstallBanner />

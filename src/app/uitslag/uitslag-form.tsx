@@ -19,10 +19,18 @@ function newTransactionId() {
   return crypto.randomUUID();
 }
 
-export default function UitslagForm({ boxen }: { boxen: Box[] }) {
+export default function UitslagForm({
+  boxen,
+  voorgeselecteerdeBox,
+  afroepId,
+}: {
+  boxen: Box[];
+  voorgeselecteerdeBox?: Box | null;
+  afroepId?: string | null;
+}) {
   const router = useRouter();
   const transactionId = useMemo(newTransactionId, []);
-  const [box, setBox] = useState<Box | null>(null);
+  const [box, setBox] = useState<Box | null>(voorgeselecteerdeBox ?? null);
   const [uitslagType, setUitslagType] = useState<"volledig" | "klein">("volledig");
   const [aantalKazenUit, setAantalKazenUit] = useState("");
   const [tarief, setTarief] = useState<"standaard" | "geetiketteerd">("standaard");
@@ -46,11 +54,12 @@ export default function UitslagForm({ boxen }: { boxen: Box[] }) {
           tarief,
           aantalKazenUit: aantalKazenUit || undefined,
           opmerking,
+          afroepId: afroepId || undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Uitslag mislukt");
-      router.push("/dashboard");
+      router.push(afroepId ? "/afroeporders" : "/dashboard");
       router.refresh();
     } catch (err: any) {
       setError(err.message);
@@ -70,23 +79,40 @@ export default function UitslagForm({ boxen }: { boxen: Box[] }) {
       </div>
 
       <div className="flex-1 overflow-auto px-5 pb-6 md:px-8 flex flex-col gap-4">
-        {!box && (
+        {afroepId && !voorgeselecteerdeBox && (
+          <div className="rounded-xl bg-red-50 text-red-700 text-sm p-3.5">
+            De box bij deze afroep is niet meer gevonden (mogelijk al uitgeslagen). Ga terug naar{" "}
+            <Link href="/afroeporders" className="underline">
+              Afroeporders
+            </Link>
+            .
+          </div>
+        )}
+
+        {!box && !afroepId && (
           <>
             <p className="text-xs font-bold text-ink">Kies een box</p>
             <BoxKiezer boxen={boxen} onSelect={setBox} />
           </>
         )}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && !box && <p className="text-sm text-red-600">{error}</p>}
 
         {box && (
           <form onSubmit={bevestig} className="flex flex-col gap-4 md:grid md:grid-cols-2 md:gap-6 md:items-start">
             <div className="min-w-0 rounded-2xl border-[1.5px] border-gold bg-white p-3.5 md:sticky md:top-4">
+              {afroepId && (
+                <p className="mb-2 text-[11px] font-semibold text-goldDeep bg-goldSoft rounded-lg px-2.5 py-1.5">
+                  Uitvoeren van een afroeporder
+                </p>
+              )}
               <div className="flex items-center justify-between mb-2">
                 <span className="font-serif font-semibold text-green">Box #{box.boxId}</span>
-                <button type="button" onClick={() => setBox(null)} className="text-xs text-inkSoft underline">
-                  andere box
-                </button>
+                {!voorgeselecteerdeBox && (
+                  <button type="button" onClick={() => setBox(null)} className="text-xs text-inkSoft underline">
+                    andere box
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-y-1 text-xs">
                 <div className="text-inkSoft">PRODUCTAFKOMST</div>

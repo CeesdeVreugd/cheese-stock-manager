@@ -15,6 +15,8 @@ async function main() {
       canFacturatie: true,
       canReserveren: true,
       canBeheer: true,
+      canActiviteiten: true,
+      ontvangtAfroepMeldingen: true,
     },
   });
   await prisma.rol.upsert({
@@ -28,6 +30,8 @@ async function main() {
       canFacturatie: true,
       canReserveren: true,
       canBeheer: false,
+      canActiviteiten: false,
+      ontvangtAfroepMeldingen: true,
     },
   });
   await prisma.rol.upsert({
@@ -41,21 +45,28 @@ async function main() {
       canFacturatie: true,
       canReserveren: false,
       canBeheer: false,
+      canActiviteiten: false,
+      ontvangtAfroepMeldingen: false,
     },
   });
   console.log("Standaardrollen klaar: Beheerder, Medewerker, Lezer.");
 
-  const email = process.env.SEED_ADMIN_EMAIL || "beheerder@beekvreugdkaas.nl";
-  const naam = process.env.SEED_ADMIN_NAAM || "Beheerder";
-
-  const gebruiker = await prisma.gebruiker.upsert({
-    where: { email },
-    update: {},
-    create: { email, naam, rolId: beheerderRol.id, status: "actief" },
-  });
-
-  console.log(`Eerste beheerder klaar: ${gebruiker.email}`);
-  console.log("Log hiermee in op /login — de code verschijnt in deze terminal (dev-modus).");
+  // De standaard-beheerder (beheerder@beekvreugdkaas.nl) wordt alleen nog
+  // aangemaakt als er nog HELEMAAL GEEN gebruikers bestaan — puur als
+  // noodgreep om een volledig lege database mee te kunnen bootstrappen.
+  // Zodra er al gebruikers zijn (het normale geval na de eerste keer),
+  // laat dit script ze met rust; roltoewijzing en nieuwe accounts gaan
+  // vanaf dan via het scherm Gebruikers.
+  const aantalGebruikers = await prisma.gebruiker.count();
+  if (aantalGebruikers === 0) {
+    const email = process.env.SEED_ADMIN_EMAIL || "beheerder@beekvreugdkaas.nl";
+    const naam = process.env.SEED_ADMIN_NAAM || "Beheerder";
+    const gebruiker = await prisma.gebruiker.create({
+      data: { email, naam, rolId: beheerderRol.id, status: "actief" },
+    });
+    console.log(`Eerste beheerder aangemaakt: ${gebruiker.email}`);
+    console.log("Log hiermee in op /login — de code verschijnt in deze terminal (dev-modus).");
+  }
 
   // Eenmalige migratie: bestaande gebruikers (van vóór het aanpasbare-
   // rollen-systeem) hebben nog geen rolId. Zonder rol zou de app voor hen

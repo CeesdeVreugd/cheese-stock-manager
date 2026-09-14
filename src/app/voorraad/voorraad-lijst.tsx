@@ -23,8 +23,8 @@ function fmtDatum(iso: string) {
   return new Date(iso).toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Amsterdam" });
 }
 
-export default function VoorraadLijst({ boxen, gereserveerdeBoxIds = [] }: { boxen: Box[]; gereserveerdeBoxIds?: number[] }) {
-  const gereserveerd = new Set(gereserveerdeBoxIds);
+export default function VoorraadLijst({ boxen, afgeroepenBoxIds = [] }: { boxen: Box[]; afgeroepenBoxIds?: number[] }) {
+  const gereserveerd = new Set(afgeroepenBoxIds);
   const [zoek, setZoek] = useState("");
   const [scanning, setScanning] = useState(false);
 
@@ -80,7 +80,7 @@ export default function VoorraadLijst({ boxen, gereserveerdeBoxIds = [] }: { box
                   <div className="flex items-center gap-1.5">
                     {gereserveerd.has(box.boxId) && (
                       <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-goldSoft text-goldDeep">
-                        Gereserveerd
+                        Afgeroepen
                       </span>
                     )}
                     <span className="text-xs font-semibold">{(box.nettoGram / 1000).toFixed(1)} kg</span>
@@ -135,7 +135,7 @@ export default function VoorraadLijst({ boxen, gereserveerdeBoxIds = [] }: { box
                     #{box.boxId}
                     {gereserveerd.has(box.boxId) && (
                       <span className="ml-2 text-[10px] font-semibold rounded-full px-2 py-0.5 bg-goldSoft text-goldDeep">
-                        Gereserveerd
+                        Afgeroepen
                       </span>
                     )}
                   </td>

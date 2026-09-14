@@ -15,10 +15,17 @@ type Gebruiker = {
     canFacturatie: boolean;
     canReserveren: boolean;
     canBeheer: boolean;
+    canActiviteiten: boolean;
   };
 };
 
-export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
+export default function AppSidebar({
+  gebruiker,
+  openAfroepen = 0,
+}: {
+  gebruiker: Gebruiker;
+  openAfroepen?: number;
+}) {
   const pathname = usePathname();
   const { rol } = gebruiker;
 
@@ -30,57 +37,92 @@ export default function AppSidebar({ gebruiker }: { gebruiker: Gebruiker }) {
   const AUTH_ROUTES = ["/login", "/ontgrendel", "/pincode/instellen"];
   if (AUTH_ROUTES.includes(pathname)) return null;
 
-  const links = [
-    { href: "/dashboard", label: "Hoofdscherm", mag: true },
-    { href: "/inslag", label: "Inslag", mag: rol.canInslag },
-    { href: "/uitslag", label: "Uitslag", mag: rol.canUitslag },
-    { href: "/voorraad", label: "Voorraad", mag: rol.canVoorraad },
-    { href: "/facturatie", label: "Facturatie", mag: rol.canFacturatie },
-    { href: "/reserveren", label: "Reserveren", mag: rol.canReserveren },
-    { href: "/reserveringen", label: "Reserveringen", mag: rol.canReserveren },
-  ].filter((l) => l.mag);
-
-  const beheerLinks = rol.canBeheer
-    ? [
-        { href: "/validaties", label: "Validatielijsten" },
-        { href: "/gebruikers", label: "Gebruikers" },
-        { href: "/rollen", label: "Rollen" },
-        { href: "/activiteiten", label: "Activiteiten" },
-      ]
-    : [];
+  const groepen = [
+    {
+      titel: null, // hoofdscherm staat los bovenaan, geen kopje nodig
+      links: [{ href: "/dashboard", label: "Hoofdscherm", mag: true }],
+    },
+    {
+      titel: "Registreren",
+      links: [
+        { href: "/inslag", label: "Inslag", mag: rol.canInslag },
+        { href: "/uitslag", label: "Uitslag", mag: rol.canUitslag },
+        { href: "/afroepen", label: "Afroepen", mag: rol.canReserveren },
+      ],
+    },
+    {
+      titel: "Overzichten",
+      links: [
+        { href: "/voorraad", label: "Voorraad", mag: rol.canVoorraad },
+        { href: "/inslag/overzicht", label: "Inslag overzicht", mag: rol.canInslag },
+        { href: "/uitslag/overzicht", label: "Uitslag overzicht", mag: rol.canUitslag },
+        { href: "/facturatie", label: "Facturatie", mag: rol.canFacturatie },
+        { href: "/afroeporders", label: "Afroeporders", mag: rol.canReserveren },
+      ],
+    },
+    {
+      titel: "Beheer",
+      links: [
+        { href: "/validaties", label: "Validatielijsten", mag: rol.canBeheer },
+        { href: "/gebruikers", label: "Gebruikers", mag: rol.canBeheer },
+        { href: "/rollen", label: "Rollen", mag: rol.canBeheer },
+        { href: "/activiteiten", label: "Activiteiten", mag: rol.canActiviteiten },
+      ],
+    },
+  ]
+    .map((g) => ({ ...g, links: g.links.filter((l) => l.mag) }))
+    .filter((g) => g.links.length > 0);
 
   return (
     <div className="hidden md:flex md:w-60 md:flex-shrink-0 md:flex-col md:py-8 md:pl-6">
       <div className="flex items-center gap-2.5 px-3 mb-8">
-        <img src="/logo-emblem.png" alt="" className="h-8 w-auto" />
-        <div>
-          <div className="font-serif text-sm font-semibold text-green leading-tight">Cheese Stock</div>
-          <div className="text-[10px] uppercase tracking-wide text-inkSoft">Van Beek &amp; De Vreugd Kaas</div>
+        <img src="/logo-emblem.png" alt="" className="h-9 w-auto" />
+        <div className="text-[10px] uppercase tracking-wide text-inkSoft leading-tight">
+          Van Beek &amp; De Vreugd Kaas
         </div>
       </div>
 
-      <nav className="flex flex-col gap-1">
-        {[...links, ...beheerLinks].map((l) => {
-          const actief = pathname === l.href;
-          return (
-            <Link
-              key={l.href}
-              href={l.href}
-              className={`rounded-xl px-3 py-2.5 text-sm font-medium ${
-                actief ? "bg-gold text-white" : "text-ink hover:bg-goldSoft"
-              }`}
-            >
-              {l.label}
-            </Link>
-          );
-        })}
+      <nav className="flex flex-col gap-4">
+        {groepen.map((g, i) => (
+          <div key={i} className="flex flex-col gap-1">
+            {g.titel && (
+              <p className="px-3 mb-1 text-[10px] font-bold uppercase tracking-wide text-inkSoft">{g.titel}</p>
+            )}
+            {g.links.map((l) => {
+              const actief = pathname === l.href;
+              const badge = l.href === "/afroeporders" && openAfroepen > 0 ? openAfroepen : null;
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium ${
+                    actief ? "bg-gold text-white" : "text-ink hover:bg-goldSoft"
+                  }`}
+                >
+                  <span>{l.label}</span>
+                  {badge && (
+                    <span
+                      className={`text-[10px] font-bold rounded-full px-1.5 py-0.5 ${
+                        actief ? "bg-white/25 text-white" : "bg-goldDeep text-white"
+                      }`}
+                    >
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="mt-auto pt-6 px-3">
-        <div className="text-xs font-semibold text-ink">{gebruiker.naam}</div>
-        <div className="text-[11px] text-inkSoft mb-1">{gebruiker.email}</div>
-        <div className="text-[11px] text-inkSoft mb-3">{rol.naam}</div>
-        <UitloggenKnop className="text-xs font-semibold text-red-600 underline" />
+        <Link href="/profiel" className="block rounded-xl hover:bg-goldSoft -mx-3 px-3 py-2 mb-1">
+          <div className="text-xs font-semibold text-ink">{gebruiker.naam}</div>
+          <div className="text-[11px] text-inkSoft">{gebruiker.email}</div>
+          <div className="text-[11px] text-inkSoft">{rol.naam} · Profiel</div>
+        </Link>
+        <UitloggenKnop className="text-xs font-semibold text-red-600 underline px-3" />
       </div>
     </div>
   );

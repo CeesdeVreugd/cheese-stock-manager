@@ -11,6 +11,8 @@ type Rol = {
   canFacturatie: boolean;
   canReserveren: boolean;
   canBeheer: boolean;
+  canActiviteiten: boolean;
+  ontvangtAfroepMeldingen: boolean;
   _count: { gebruikers: number };
 };
 
@@ -19,8 +21,10 @@ const PERMISSIES: { veld: keyof Rol; label: string }[] = [
   { veld: "canUitslag", label: "Uitslag" },
   { veld: "canVoorraad", label: "Voorraad" },
   { veld: "canFacturatie", label: "Facturatie" },
-  { veld: "canReserveren", label: "Reserveren" },
+  { veld: "canReserveren", label: "Afroep" },
   { veld: "canBeheer", label: "Beheer (validatielijsten, gebruikers, rollen)" },
+  { veld: "canActiviteiten", label: "Activiteitenlog" },
+  { veld: "ontvangtAfroepMeldingen", label: "Pushmelding bij nieuwe afroeporder" },
 ];
 
 export default function RollenLijst({ initieel, huidigRolId }: { initieel: Rol[]; huidigRolId: string }) {

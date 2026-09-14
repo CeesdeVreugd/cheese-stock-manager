@@ -16,13 +16,13 @@ type Box = {
 export default function BoxKiezer({
   boxen,
   onSelect,
-  gereserveerdeBoxIds = [],
+  afgeroepenBoxIds = [],
 }: {
   boxen: Box[];
   onSelect: (box: Box) => void;
-  gereserveerdeBoxIds?: number[];
+  afgeroepenBoxIds?: number[];
 }) {
-  const gereserveerd = new Set(gereserveerdeBoxIds);
+  const gereserveerd = new Set(afgeroepenBoxIds);
   const [zoek, setZoek] = useState("");
   const [scanning, setScanning] = useState(false);
 
@@ -75,7 +75,7 @@ export default function BoxKiezer({
               <div className="flex items-center gap-1.5">
                 {gereserveerd.has(box.boxId) && (
                   <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-goldSoft text-goldDeep">
-                    Gereserveerd
+                    Afgeroepen
                   </span>
                 )}
                 <span className="text-xs font-semibold">{(box.nettoGram / 1000).toFixed(1)} kg</span>

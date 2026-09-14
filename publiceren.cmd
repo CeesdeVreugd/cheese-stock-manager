@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Activiteitenlog, pincode resetten, klant als keuzeveld, doorbladerbare boxkeuze en opgeloste tabel/UI-fouten."
+set "OMSCHRIJVING=Wie pushmeldingen bij afroeporders krijgt is nu instelbaar per rol, via Rollen."
 
 echo.
 echo ============================================

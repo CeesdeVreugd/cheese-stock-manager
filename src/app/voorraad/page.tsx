@@ -21,10 +21,10 @@ export default async function VoorraadPage() {
     nettoGram: b.nettoGram,
   }));
 
-  const openReserveringen = gebruiker.rol.canReserveren
-    ? await prisma.reservering.findMany({ where: { status: "open" }, select: { boxId: true } })
+  const openAfroepen = gebruiker.rol.canReserveren
+    ? await prisma.afroep.findMany({ where: { status: "open" }, select: { boxId: true } })
     : [];
-  const gereserveerdeBoxIds = openReserveringen.map((r) => r.boxId);
+  const afgeroepenBoxIds = openAfroepen.map((r) => r.boxId);
 
   return (
     <OntgrendelGate>
@@ -39,7 +39,7 @@ export default async function VoorraadPage() {
             <div className="w-12" />
           </div>
           <div className="px-5 pb-6">
-            <VoorraadLijst boxen={boxen} gereserveerdeBoxIds={gereserveerdeBoxIds} />
+            <VoorraadLijst boxen={boxen} afgeroepenBoxIds={afgeroepenBoxIds} />
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default async function VoorraadPage() {
             <h1 className="font-serif text-3xl font-semibold text-green">Voorraad</h1>
             <p className="text-sm text-inkSoft">{boxen.length} boxen actief</p>
           </div>
-          <VoorraadLijst boxen={boxen} gereserveerdeBoxIds={gereserveerdeBoxIds} />
+          <VoorraadLijst boxen={boxen} afgeroepenBoxIds={afgeroepenBoxIds} />
         </div>
       </div>
     </OntgrendelGate>

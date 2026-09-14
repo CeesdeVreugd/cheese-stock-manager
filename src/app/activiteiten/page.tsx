@@ -8,13 +8,13 @@ import { fmtDatumTijd } from "@/lib/format";
 const ACTIE_KLEUR: Record<string, string> = {
   Inslag: "bg-goldSoft text-goldDeep",
   Uitslag: "bg-greenSoft text-green",
-  Reservering: "bg-blue-50 text-blue-700",
+  Afroep: "bg-blue-50 text-blue-700",
   Gebruiker: "bg-red-50 text-red-700",
 };
 
 export default async function ActiviteitenPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
-  if (!gebruiker.rol.canBeheer) return <GeenToegang />;
+  if (!gebruiker.rol.canActiviteiten) return <GeenToegang />;
 
   const regels = await prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 300 });
 

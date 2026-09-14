@@ -61,6 +61,11 @@ export async function verstuurMailViaGraph(naar: string, onderwerp: string, teks
         subject: onderwerp,
         body: { contentType: "Text", content: tekst },
         toRecipients: [{ emailAddress: { address: naar } }],
+        // Zonder dit expliciete "from" stuurt Graph als het hoofdadres van
+        // de mailbox, ook als MS_SENDER_EMAIL een alias is (bv.
+        // cheesstockmanager@... als alias op info@...). Met deze regel
+        // wordt echt namens de alias verstuurd.
+        from: { emailAddress: { address: afzender } },
       },
       saveToSentItems: false,
     }),

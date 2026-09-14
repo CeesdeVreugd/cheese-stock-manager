@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   });
 
   try {
-    await sendLoginCode(email, code);
+    await sendLoginCode(email, code, gebruiker.naam);
   } catch (err: any) {
     console.error("Inlogcode versturen mislukt:", err?.message || err);
     return NextResponse.json(

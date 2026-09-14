@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Inlogscherm toont nu de echte foutmelding i.p.v. altijd dezelfde generieke tekst."
+set "OMSCHRIJVING=Inlogmail verstuurt nu echt vanaf het alias-adres, met begroeting op naam."
 
 echo.
 echo ============================================

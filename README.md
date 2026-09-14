@@ -164,6 +164,55 @@ databasetabel als voorheen (via `@@map`) — zo was deze hernoeming een
 risicoloze wijziging, zonder een migratie die bestaande afroeporders had
 kunnen wissen.
 
+## Inlogcodes versturen via Outlook/Microsoft 365
+
+Naast Resend kan de app inlogcodes ook versturen via jullie eigen Microsoft
+365/Outlook-omgeving, via de Microsoft Graph API. Dit moet je één keer
+instellen in de Microsoft-beheeromgeving — dat kan ik niet voor je doen.
+
+**Stap 1 — App-registratie aanmaken**
+1. Ga naar [portal.azure.com](https://portal.azure.com) → **Microsoft Entra ID** → **App registrations** → **New registration**.
+2. Geef een naam, bv. "Cheese Stock Manager — Mail". Laat de rest op de standaardwaarden staan → **Register**.
+3. Noteer de **Application (client) ID** en **Directory (tenant) ID** die nu getoond worden.
+
+**Stap 2 — Een geheime sleutel aanmaken**
+1. In hetzelfde app-registratie-scherm: **Certificates & secrets** → **New client secret**.
+2. Geef een omschrijving, kies een vervaldatum (bv. 24 maanden), klik **Add**.
+3. Kopieer de waarde **direct** — die wordt maar één keer getoond.
+
+**Stap 3 — Rechten geven om te mogen mailen**
+1. **API permissions** → **Add a permission** → **Microsoft Graph** → **Application permissions**.
+2. Zoek en vink aan: **Mail.Send** → **Add permissions**.
+3. Klik daarna op **Grant admin consent for [jullie organisatie]** (hiervoor heb je beheerdersrechten in Microsoft 365 nodig — zonder deze stap werkt het niet).
+
+**Stap 4 — Het verzendadres bepalen**
+Kies het mailadres waar de inlogcodes vandaan moeten komen (bv. een bestaand
+adres, of een nieuwe gedeelde mailbox zoals `noreply@beekvreugdkaas.nl`).
+Zonder verdere actie mag de app hiermee namens **elk** mailadres in de
+organisatie versturen — voor de meeste bedrijven prima, maar wil je dit
+uit voorzichtigheid beperken tot alleen dat ene adres, dan kan dat via een
+**Application Access Policy** in Exchange Online PowerShell:
+
+```powershell
+New-ApplicationAccessPolicy -AppId "<client-id-van-stap-1>" -PolicyScopeGroupId "noreply@beekvreugdkaas.nl" -AccessRight RestrictAccess -Description "Cheese Stock Manager mag alleen als dit adres versturen"
+```
+
+**Stap 5 — De vier waarden invullen**
+Zet in `.env` én in Vercel's Environment Variables:
+
+```
+MS_TENANT_ID=<Directory (tenant) ID uit stap 1>
+MS_CLIENT_ID=<Application (client) ID uit stap 1>
+MS_CLIENT_SECRET=<de geheime waarde uit stap 2>
+MS_SENDER_EMAIL=<het verzendadres uit stap 4>
+```
+
+Zodra deze vier zijn ingevuld (en er een nieuwe deployment is geweest),
+gebruikt de app automatisch Outlook in plaats van Resend — er hoeft verder
+niets aangepast te worden. Zonder deze vier blijft Resend (of, zonder beide,
+de ontwikkelmodus met de code in de servertermina) gewoon werken zoals
+voorheen.
+
 ## Rechten per scherm — ook voor nieuwe modules
 
 Elke module heeft een eigen aan/uit-vinkje in **Rollen**, los van de algemene

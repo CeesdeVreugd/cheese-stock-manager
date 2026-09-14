@@ -150,7 +150,20 @@ export async function vereisOntgrendeldeGebruikerApi() {
 // Verstuurt de inlogcode via Resend als er een API-sleutel is ingesteld.
 // Zonder sleutel (lokaal testen, gratis-tier zonder e-mail) verschijnt de
 // code in de servertermina — zo kun je zonder een cent uit te geven inloggen.
+// Verstuurt de inlogcode. Volgorde: Microsoft Graph (Outlook/M365) als dat
+// is ingesteld, anders Resend, en zonder allebei verschijnt de code in de
+// servertermina — zo kun je zonder een cent uit te geven lokaal testen.
 export async function sendLoginCode(email: string, code: string) {
+  const onderwerp = "Je inlogcode voor Cheese Stock Manager";
+  const tekst = `Je eenmalige inlogcode is: ${code}\n\nDeze code is 10 minuten geldig.`;
+
+  const gebruiktGraph = process.env.MS_TENANT_ID && process.env.MS_CLIENT_ID && process.env.MS_CLIENT_SECRET;
+  if (gebruiktGraph) {
+    const { verstuurMailViaGraph } = await import("@/lib/graph-mail");
+    await verstuurMailViaGraph(email, onderwerp, tekst);
+    return;
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.log(`\n[DEV] Inlogcode voor ${email}: ${code}\n`);
@@ -161,7 +174,7 @@ export async function sendLoginCode(email: string, code: string) {
   await resend.emails.send({
     from: process.env.RESEND_FROM || "Cheese Stock Manager <inloggen@example.com>",
     to: email,
-    subject: "Je inlogcode voor Cheese Stock Manager",
-    text: `Je eenmalige inlogcode is: ${code}\n\nDeze code is 10 minuten geldig.`,
+    subject: onderwerp,
+    text: tekst,
   });
 }

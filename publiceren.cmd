@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Alle 'aantal kazen'-invoervelden tonen nu het numerieke toetsenbord op mobiel."
+set "OMSCHRIJVING=Inlogcodes kunnen nu ook via Outlook/Microsoft 365 verstuurd worden (naast Resend)."
 
 echo.
 echo ============================================

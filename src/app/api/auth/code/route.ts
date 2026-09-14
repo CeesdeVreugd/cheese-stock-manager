@@ -24,7 +24,15 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  await sendLoginCode(email, code);
+  try {
+    await sendLoginCode(email, code);
+  } catch (err: any) {
+    console.error("Inlogcode versturen mislukt:", err?.message || err);
+    return NextResponse.json(
+      { error: "De inlogcode kon niet verstuurd worden. Probeer het opnieuw, of neem contact op met een beheerder." },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

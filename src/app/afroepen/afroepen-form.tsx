@@ -202,6 +202,7 @@ export default function AfroepenForm({
                   <input
                     required
                     type="number"
+                    inputMode="numeric"
                     min={1}
                     max={beschikbaar}
                     value={aantalKazen}

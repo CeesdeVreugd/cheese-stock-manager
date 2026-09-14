@@ -162,6 +162,7 @@ export default function UitslagForm({
                 <input
                   required
                   type="number"
+                  inputMode="numeric"
                   min={1}
                   max={box.aantalKazen}
                   value={aantalKazenUit}

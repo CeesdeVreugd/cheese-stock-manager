@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Uitvoeren van een deel-afroep zet Uitslag nu terecht op 'Aantal kazen' i.p.v. altijd 'Hele box'."
+set "OMSCHRIJVING=Alle 'aantal kazen'-invoervelden tonen nu het numerieke toetsenbord op mobiel."
 
 echo.
 echo ============================================

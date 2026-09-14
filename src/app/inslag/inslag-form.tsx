@@ -152,6 +152,7 @@ export default function InslagForm() {
           <input
             required
             type="number"
+            inputMode="numeric"
             min={1}
             value={form.aantalKazen}
             onChange={(e) => update("aantalKazen", e.target.value)}

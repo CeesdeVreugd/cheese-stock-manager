@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Inlogmail verstuurt nu echt vanaf het alias-adres, met begroeting op naam."
+set "OMSCHRIJVING=Ondertekening van de inlogmail aangepast naar 'Systeembeheer | Van Beek & De Vreugd Kaas'."
 
 echo.
 echo ============================================

@@ -153,7 +153,7 @@ export async function vereisOntgrendeldeGebruikerApi() {
 export async function sendLoginCode(email: string, code: string, naam?: string) {
   const onderwerp = "Je inlogcode voor Cheese Stock Manager";
   const aanhef = naam ? `Beste ${naam},` : "Beste,";
-  const tekst = `${aanhef}\n\nJe eenmalige inlogcode voor de Cheese Stock Manager-app is: ${code}\n\nDeze code is 10 minuten geldig.\n\nMet vriendelijke groet,\nVan Beek & De Vreugd Kaas`;
+  const tekst = `${aanhef}\n\nJe eenmalige inlogcode voor de Cheese Stock Manager-app is: ${code}\n\nDeze code is 10 minuten geldig.\n\nMet vriendelijke groet,\nSysteembeheer | Van Beek & De Vreugd Kaas`;
 
   const gebruiktGraph = process.env.MS_TENANT_ID && process.env.MS_CLIENT_ID && process.env.MS_CLIENT_SECRET;
   if (gebruiktGraph) {

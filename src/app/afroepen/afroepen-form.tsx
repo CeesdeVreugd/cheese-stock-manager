@@ -20,11 +20,11 @@ type Klant = { id: string; naam: string };
 export default function AfroepenForm({
   boxen,
   klanten,
-  afgeroepenBoxIds,
+  beschikbaarPerBox,
 }: {
   boxen: Box[];
   klanten: Klant[];
-  afgeroepenBoxIds: number[];
+  beschikbaarPerBox: Record<number, number>;
 }) {
   const router = useRouter();
   const [box, setBox] = useState<Box | null>(null);
@@ -35,6 +35,19 @@ export default function AfroepenForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [gelukt, setGelukt] = useState(false);
+
+  const beschikbaar = box ? beschikbaarPerBox[box.boxId] ?? box.aantalKazen : 0;
+  const volledigBeschikbaar = box ? beschikbaar >= box.aantalKazen : true;
+  const nietsBeschikbaar = box ? beschikbaar <= 0 : false;
+
+  function kiesBox(gekozen: Box) {
+    setBox(gekozen);
+    const beschikbaarVoorGekozen = beschikbaarPerBox[gekozen.boxId] ?? gekozen.aantalKazen;
+    // Is er al een deel afgeroepen? Dan is "hele box" niet meer zinnig —
+    // meteen op "aantal kazen" zetten, begrensd op wat nog vrij is.
+    setVolledigeBox(beschikbaarVoorGekozen >= gekozen.aantalKazen);
+    setAantalKazen("");
+  }
 
   async function bevestig(e: React.FormEvent) {
     e.preventDefault();
@@ -108,7 +121,7 @@ export default function AfroepenForm({
         {!gelukt && !box && (
           <>
             <p className="text-xs font-bold text-ink">Kies een box</p>
-            <BoxKiezer boxen={boxen} onSelect={setBox} afgeroepenBoxIds={afgeroepenBoxIds} />
+            <BoxKiezer boxen={boxen} onSelect={kiesBox} beschikbaarPerBox={beschikbaarPerBox} />
           </>
         )}
 
@@ -134,7 +147,21 @@ export default function AfroepenForm({
                 <div className="font-medium">
                   {box.aantalKazen} stuks · {(box.nettoGram / 1000).toFixed(1)} kg
                 </div>
+                {!volledigBeschikbaar && (
+                  <>
+                    <div className="text-inkSoft mt-1">BESCHIKBAAR</div>
+                    <div />
+                    <div className={`font-medium ${nietsBeschikbaar ? "text-red-600" : "text-goldDeep"}`}>
+                      {beschikbaar} van de {box.aantalKazen} stuks
+                    </div>
+                  </>
+                )}
               </div>
+              {nietsBeschikbaar && (
+                <p className="mt-2 text-xs text-red-600 bg-red-50 rounded-lg px-2.5 py-1.5">
+                  Deze box is al volledig afgeroepen door iemand anders — niets meer beschikbaar.
+                </p>
+              )}
             </div>
 
             <div className="min-w-0 flex flex-col gap-4">
@@ -143,8 +170,9 @@ export default function AfroepenForm({
                 <div className="flex rounded-xl bg-goldSoft p-1">
                   <button
                     type="button"
+                    disabled={!volledigBeschikbaar}
                     onClick={() => setVolledigeBox(true)}
-                    className={`flex-1 rounded-lg py-2.5 text-sm font-semibold ${
+                    className={`flex-1 rounded-lg py-2.5 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed ${
                       volledigeBox ? "bg-white text-green shadow" : "text-goldDeep"
                     }`}
                   >
@@ -152,14 +180,20 @@ export default function AfroepenForm({
                   </button>
                   <button
                     type="button"
+                    disabled={nietsBeschikbaar}
                     onClick={() => setVolledigeBox(false)}
-                    className={`flex-1 rounded-lg py-2.5 text-sm font-semibold ${
+                    className={`flex-1 rounded-lg py-2.5 text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed ${
                       !volledigeBox ? "bg-white text-green shadow" : "text-goldDeep"
                     }`}
                   >
                     Aantal kazen
                   </button>
                 </div>
+                {!volledigBeschikbaar && !nietsBeschikbaar && (
+                  <p className="text-[11px] text-inkSoft mt-1">
+                    Een deel is al afgeroepen — je kunt nu alleen nog een aantal kazen kiezen.
+                  </p>
+                )}
               </div>
 
               {!volledigeBox && (
@@ -169,12 +203,12 @@ export default function AfroepenForm({
                     required
                     type="number"
                     min={1}
-                    max={box.aantalKazen}
+                    max={beschikbaar}
                     value={aantalKazen}
                     onChange={(e) => setAantalKazen(e.target.value)}
                     className="input"
                   />
-                  <p className="text-[11px] text-inkSoft mt-1">Maximaal {box.aantalKazen} beschikbaar</p>
+                  <p className="text-[11px] text-inkSoft mt-1">Maximaal {beschikbaar} beschikbaar</p>
                 </div>
               )}
 
@@ -203,7 +237,10 @@ export default function AfroepenForm({
                 <textarea value={opmerking} onChange={(e) => setOpmerking(e.target.value)} className="input h-20" />
               </div>
 
-              <button disabled={busy} className="w-full rounded-xl bg-gold py-3.5 font-bold text-white shadow-md disabled:opacity-60">
+              <button
+                disabled={busy || nietsBeschikbaar}
+                className="w-full rounded-xl bg-gold py-3.5 font-bold text-white shadow-md disabled:opacity-60"
+              >
                 {busy ? "Vastleggen…" : "Afroep vastleggen"}
               </button>
               <p className="text-[11px] text-inkSoft text-center">

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 import { logActiviteit } from "@/lib/audit";
 import { stuurPushNaarRecht } from "@/lib/push";
+import { beschikbaarVoorBox } from "@/lib/afroep";
 
 export async function GET(req: NextRequest) {
   const gebruiker = await vereisOntgrendeldeGebruikerApi();
@@ -36,10 +37,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Box niet gevonden" }, { status: 404 });
   }
 
-  if (!volledigeBox) {
+  // Altijd server-side herberekenen — nooit op een client-getoond aantal
+  // vertrouwen, want ondertussen kan iemand anders al iets van deze box
+  // hebben afgeroepen.
+  const beschikbaar = await beschikbaarVoorBox(box.boxId, box.aantalKazen);
+
+  if (volledigeBox) {
+    if (beschikbaar < box.aantalKazen) {
+      return NextResponse.json(
+        { error: `Deze box is al deels afgeroepen — nog maar ${beschikbaar} van de ${box.aantalKazen} kazen beschikbaar. Kies "Aantal kazen".` },
+        { status: 409 }
+      );
+    }
+  } else {
     const aantal = Number(aantalKazen);
-    if (!aantal || aantal <= 0 || aantal > box.aantalKazen) {
-      return NextResponse.json({ error: "Aantal kazen klopt niet met de beschikbare hoeveelheid" }, { status: 400 });
+    if (!aantal || aantal <= 0) {
+      return NextResponse.json({ error: "Vul een geldig aantal kazen in" }, { status: 400 });
+    }
+    if (aantal > beschikbaar) {
+      return NextResponse.json(
+        { error: `Nog maar ${beschikbaar} kazen beschikbaar van deze box (de rest is al afgeroepen)` },
+        { status: 409 }
+      );
     }
   }
 

@@ -3,6 +3,7 @@ import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import OntgrendelGate from "@/components/ontgrendel-gate";
 import GeenToegang from "@/components/geen-toegang";
+import { beschikbaarheidPerBox } from "@/lib/afroep";
 import VoorraadLijst from "./voorraad-lijst";
 
 export default async function VoorraadPage() {
@@ -21,10 +22,9 @@ export default async function VoorraadPage() {
     nettoGram: b.nettoGram,
   }));
 
-  const openAfroepen = gebruiker.rol.canReserveren
-    ? await prisma.afroep.findMany({ where: { status: "open" }, select: { boxId: true } })
-    : [];
-  const afgeroepenBoxIds = openAfroepen.map((r) => r.boxId);
+  const beschikbaarPerBox = gebruiker.rol.canReserveren
+    ? await beschikbaarheidPerBox(boxenRaw.map((b) => ({ boxId: b.boxId, aantalKazen: b.aantalKazen })))
+    : {};
 
   return (
     <OntgrendelGate>
@@ -39,7 +39,7 @@ export default async function VoorraadPage() {
             <div className="w-12" />
           </div>
           <div className="px-5 pb-6">
-            <VoorraadLijst boxen={boxen} afgeroepenBoxIds={afgeroepenBoxIds} />
+            <VoorraadLijst boxen={boxen} beschikbaarPerBox={beschikbaarPerBox} />
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default async function VoorraadPage() {
             <h1 className="font-serif text-3xl font-semibold text-green">Voorraad</h1>
             <p className="text-sm text-inkSoft">{boxen.length} boxen actief</p>
           </div>
-          <VoorraadLijst boxen={boxen} afgeroepenBoxIds={afgeroepenBoxIds} />
+          <VoorraadLijst boxen={boxen} beschikbaarPerBox={beschikbaarPerBox} />
         </div>
       </div>
     </OntgrendelGate>

@@ -23,8 +23,7 @@ function fmtDatum(iso: string) {
   return new Date(iso).toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Amsterdam" });
 }
 
-export default function VoorraadLijst({ boxen, afgeroepenBoxIds = [] }: { boxen: Box[]; afgeroepenBoxIds?: number[] }) {
-  const gereserveerd = new Set(afgeroepenBoxIds);
+export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen: Box[]; beschikbaarPerBox?: Record<number, number> }) {
   const [zoek, setZoek] = useState("");
   const [scanning, setScanning] = useState(false);
 
@@ -67,6 +66,8 @@ export default function VoorraadLijst({ boxen, afgeroepenBoxIds = [] }: { boxen:
       <div className="flex flex-col gap-2.5 md:hidden">
         {gefilterd.map((box) => {
           const dagen = leeftijdInDagen(box.productiedatum);
+          const beschikbaar = beschikbaarPerBox[box.boxId];
+          const heeftAfroep = beschikbaar !== undefined && beschikbaar < box.aantalKazen;
           return (
             <div key={box.id} className="rounded-2xl border-[1.5px] border-line bg-white p-3.5 flex gap-3">
               <img
@@ -78,9 +79,13 @@ export default function VoorraadLijst({ boxen, afgeroepenBoxIds = [] }: { boxen:
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-serif font-semibold text-green">Box #{box.boxId}</span>
                   <div className="flex items-center gap-1.5">
-                    {gereserveerd.has(box.boxId) && (
-                      <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-goldSoft text-goldDeep">
-                        Afgeroepen
+                    {heeftAfroep && (
+                      <span
+                        className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+                          beschikbaar <= 0 ? "bg-red-100 text-red-700" : "bg-goldSoft text-goldDeep"
+                        }`}
+                      >
+                        {beschikbaar} beschikbaar
                       </span>
                     )}
                     <span className="text-xs font-semibold">{(box.nettoGram / 1000).toFixed(1)} kg</span>
@@ -126,6 +131,8 @@ export default function VoorraadLijst({ boxen, afgeroepenBoxIds = [] }: { boxen:
           <tbody>
             {gefilterd.map((box) => {
               const dagen = leeftijdInDagen(box.productiedatum);
+              const beschikbaar = beschikbaarPerBox[box.boxId];
+              const heeftAfroep = beschikbaar !== undefined && beschikbaar < box.aantalKazen;
               return (
                 <tr key={box.id} className="border-t border-line hover:bg-goldSoft/40">
                   <td className="py-2.5 px-4">
@@ -133,9 +140,13 @@ export default function VoorraadLijst({ boxen, afgeroepenBoxIds = [] }: { boxen:
                   </td>
                   <td className="py-2.5 px-4 font-serif font-semibold text-green">
                     #{box.boxId}
-                    {gereserveerd.has(box.boxId) && (
-                      <span className="ml-2 text-[10px] font-semibold rounded-full px-2 py-0.5 bg-goldSoft text-goldDeep">
-                        Afgeroepen
+                    {heeftAfroep && (
+                      <span
+                        className={`ml-2 text-[10px] font-semibold rounded-full px-2 py-0.5 ${
+                          beschikbaar <= 0 ? "bg-red-100 text-red-700" : "bg-goldSoft text-goldDeep"
+                        }`}
+                      >
+                        {beschikbaar} beschikbaar
                       </span>
                     )}
                   </td>

@@ -198,11 +198,19 @@ gecontroleerd, niet alleen verborgen in het menu.
 
 Verkopers kunnen via **Afroepen** een box scannen of opzoeken en vastleggen
 dat (een deel van) de box is afgeroepen voor een groothandelklant. Dit past
-de voorraad nog niet aan — het is een aankondiging, zichtbaar via een
-"Afgeroepen"-label in Voorraad en in het overzicht **Afroeporders**. De
-koppeling met Uitslag is inmiddels wél gelegd: de knop "Uitvoeren" bij een
-open afroeporder opent Uitslag met de juiste box klaar, en rondt de
-afroeporder na bevestigen automatisch af (zie "Afroep uitvoeren" hierboven).
+de voorraad nog niet aan — het is een aankondiging, zichtbaar met de exacte
+beschikbaarheid in Voorraad en in het overzicht **Afroeporders**. De
+koppeling met Uitslag is gelegd: de knop "Uitvoeren" bij een open
+afroeporder opent Uitslag met de juiste box klaar, en rondt de afroeporder
+na bevestigen automatisch af (zie "Afroep uitvoeren" hierboven).
+
+Meerdere openstaande afroeporders op dezelfde box tellen bij elkaar op: is
+er van een box van 20 stuks al 10 afgeroepen, dan ziet de volgende persoon
+"10 beschikbaar" en kan die niet meer dan 10 afroepen — "Hele box" is dan
+niet meer te kiezen. Dit wordt altijd server-side herberekend bij het
+daadwerkelijk vastleggen (nooit op een mogelijk verouderd getal in de
+browser vertrouwd), dus twee mensen kunnen elkaar niet per ongeluk
+dubbel-afroepen.
 
 ## Een opmerking over de opslagberekening (kg-dagen)
 

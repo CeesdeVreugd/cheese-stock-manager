@@ -121,6 +121,29 @@ export default function GebruikersLijst({
     }
   }
 
+  async function uitnodigen(g: Gebruiker) {
+    setBusy(true);
+    setError(null);
+    setUitnodigingStatus(null);
+    try {
+      const res = await fetch(`/api/gebruikers/${g.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stuurUitnodiging: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Versturen mislukt");
+      setUitnodigingStatus(
+        data.uitnodigingVerstuurd ? `Uitnodigingsmail verstuurd naar ${g.email}.` : data.uitnodigingFout || "Versturen mislukt."
+      );
+      setTimeout(() => setUitnodigingStatus(null), 4000);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function bevestigVerwijderen() {
     if (!teVerwijderen) return;
     setBusy(true);
@@ -197,6 +220,9 @@ export default function GebruikersLijst({
             Pincode van {gereset} gereset — die persoon moet nu opnieuw met e-mail inloggen.
           </p>
         )}
+        {uitnodigingStatus && (
+          <p className="text-sm text-green mb-3 bg-greenSoft rounded-lg px-3 py-2">{uitnodigingStatus}</p>
+        )}
         {/* Mobiel: gestapelde kaartjes */}
         <div className="flex flex-col gap-2 md:hidden">
           {lijst.map((g) => (
@@ -237,9 +263,14 @@ export default function GebruikersLijst({
                 </div>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <button onClick={() => resetPincode(g)} disabled={busy} className="text-xs text-goldDeep underline flex-shrink-0">
-                  pincode resetten
-                </button>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => uitnodigen(g)} disabled={busy} className="text-xs text-green underline flex-shrink-0">
+                    uitnodigen
+                  </button>
+                  <button onClick={() => resetPincode(g)} disabled={busy} className="text-xs text-goldDeep underline flex-shrink-0">
+                    pincode resetten
+                  </button>
+                </div>
                 {g.id !== huidigId && (
                   <button onClick={() => setTeVerwijderen(g)} className="text-xs text-red-600 underline flex-shrink-0">
                     verwijderen
@@ -300,6 +331,9 @@ export default function GebruikersLijst({
                 </td>
                 <td className="py-3 text-right">
                   <div className="flex gap-2 justify-end">
+                    <button onClick={() => uitnodigen(g)} disabled={busy} className="text-xs text-green underline">
+                      Uitnodigen
+                    </button>
                     <button onClick={() => resetPincode(g)} disabled={busy} className="text-xs text-goldDeep underline">
                       Pincode resetten
                     </button>

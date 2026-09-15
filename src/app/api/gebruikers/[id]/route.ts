@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
+import { vereisOntgrendeldeGebruikerApi, sendUitnodiging } from "@/lib/auth";
 import { logActiviteit } from "@/lib/audit";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -11,7 +11,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const { status, rolId, resetPincode } = await req.json();
+  const { status, rolId, resetPincode, stuurUitnodiging } = await req.json();
 
   const data: { status?: "actief" | "geblokkeerd"; rolId?: string } = {};
 
@@ -58,7 +58,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     await logActiviteit(gebruiker, "Gebruiker", `Pincode van ${bijgewerkt.naam} gereset`);
   }
 
-  return NextResponse.json({ gebruiker: bijgewerkt });
+  let uitnodigingVerstuurd = false;
+  let uitnodigingFout: string | null = null;
+  if (stuurUitnodiging === true) {
+    try {
+      await sendUitnodiging(bijgewerkt.email, bijgewerkt.naam, req.nextUrl.origin);
+      uitnodigingVerstuurd = true;
+      await logActiviteit(gebruiker, "Gebruiker", `Uitnodigingsmail (opnieuw) verstuurd naar ${bijgewerkt.email}`);
+    } catch (err: any) {
+      console.error("Uitnodigingsmail versturen mislukt:", err?.message || err);
+      uitnodigingFout = "De uitnodigingsmail kon niet verstuurd worden.";
+    }
+  }
+
+  return NextResponse.json({ gebruiker: bijgewerkt, uitnodigingVerstuurd, uitnodigingFout });
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

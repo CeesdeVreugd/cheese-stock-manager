@@ -14,9 +14,10 @@ type Box = {
   nettoGram: number;
 };
 
-function leeftijdInDagen(productiedatum: string): number {
+function leeftijdInWeken(productiedatum: string): number {
   const ms = Date.now() - new Date(productiedatum).getTime();
-  return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+  const dagen = Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+  return Math.floor(dagen / 7);
 }
 
 function fmtDatum(iso: string) {
@@ -25,24 +26,59 @@ function fmtDatum(iso: string) {
 
 export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen: Box[]; beschikbaarPerBox?: Record<number, number> }) {
   const [zoek, setZoek] = useState("");
+  const [productafkomstFilter, setProductafkomstFilter] = useState("");
+  const [leeftijdVanaf, setLeeftijdVanaf] = useState("");
+  const [leeftijdTotEnMet, setLeeftijdTotEnMet] = useState("");
   const [scanning, setScanning] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  // Alle productafkomst-waarden die op dit moment daadwerkelijk in
+  // voorraad zijn — dit is de "leverancier"-achtige indeling die er in de
+  // praktijk voor deze vraag toe doet (§ Validatielijsten/Productafkomst).
+  const productafkomstOpties = useMemo(() => {
+    return Array.from(new Set(boxen.map((b) => b.productafkomst))).sort((a, b) => a.localeCompare(b));
+  }, [boxen]);
 
   const gefilterd = useMemo(() => {
-    if (!zoek.trim()) return boxen;
     const q = zoek.trim().toLowerCase();
-    return boxen.filter(
-      (b) => String(b.boxId).includes(q) || b.partijcode.toLowerCase().includes(q) || b.productafkomst.toLowerCase().includes(q)
+    const vanaf = leeftijdVanaf ? Number(leeftijdVanaf) : null;
+    const totEnMet = leeftijdTotEnMet ? Number(leeftijdTotEnMet) : null;
+
+    return boxen.filter((b) => {
+      if (q && !(String(b.boxId).includes(q) || b.partijcode.toLowerCase().includes(q) || b.productafkomst.toLowerCase().includes(q))) {
+        return false;
+      }
+      if (productafkomstFilter && b.productafkomst !== productafkomstFilter) return false;
+      const weken = leeftijdInWeken(b.productiedatum);
+      if (vanaf !== null && weken < vanaf) return false;
+      if (totEnMet !== null && weken > totEnMet) return false;
+      return true;
+    });
+  }, [zoek, boxen, productafkomstFilter, leeftijdVanaf, leeftijdTotEnMet]);
+
+  const totalen = useMemo(() => {
+    return gefilterd.reduce(
+      (acc, b) => ({ aantalKazen: acc.aantalKazen + b.aantalKazen, nettoGram: acc.nettoGram + b.nettoGram }),
+      { aantalKazen: 0, nettoGram: 0 }
     );
-  }, [zoek, boxen]);
+  }, [gefilterd]);
+
+  const filtersActief = !!(productafkomstFilter || leeftijdVanaf || leeftijdTotEnMet);
 
   function scanResultaat(waarde: string) {
     setScanning(false);
     setZoek(waarde);
   }
 
+  function wisFilters() {
+    setProductafkomstFilter("");
+    setLeeftijdVanaf("");
+    setLeeftijdTotEnMet("");
+  }
+
   return (
     <div>
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-3">
         <input
           value={zoek}
           onChange={(e) => setZoek(e.target.value)}
@@ -58,14 +94,79 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
         </button>
       </div>
 
+      <button
+        type="button"
+        onClick={() => setFiltersOpen((v) => !v)}
+        className={`text-xs font-semibold mb-3 ${filtersActief ? "text-goldDeep" : "text-inkSoft"}`}
+      >
+        {filtersOpen ? "Filters verbergen ▲" : `Filters op leverancier/leeftijd ${filtersActief ? "(actief)" : ""} ▼`}
+      </button>
+
+      {filtersOpen && (
+        <div className="rounded-xl border-[1.5px] border-line bg-white p-3.5 mb-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-[11px] font-bold text-inkSoft mb-1">Productafkomst / leverancier</label>
+            <select value={productafkomstFilter} onChange={(e) => setProductafkomstFilter(e.target.value)} className="input">
+              <option value="">Alle</option>
+              {productafkomstOpties.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-inkSoft mb-1">Leeftijd vanaf (weken)</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={leeftijdVanaf}
+              onChange={(e) => setLeeftijdVanaf(e.target.value)}
+              placeholder="bv. 8"
+              className="input"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-bold text-inkSoft mb-1">Leeftijd t/m (weken)</label>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              value={leeftijdTotEnMet}
+              onChange={(e) => setLeeftijdTotEnMet(e.target.value)}
+              placeholder="bv. 12"
+              className="input"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              type="button"
+              onClick={wisFilters}
+              disabled={!filtersActief}
+              className="w-full rounded-xl border-[1.5px] border-line py-2.5 text-xs font-semibold text-inkSoft disabled:opacity-40"
+            >
+              Filters wissen
+            </button>
+          </div>
+        </div>
+      )}
+
       {scanning && <QrScanner onResult={scanResultaat} onClose={() => setScanning(false)} />}
+
+      {(filtersActief || zoek) && gefilterd.length > 0 && (
+        <div className="rounded-xl bg-greenSoft px-3.5 py-2.5 mb-4 text-sm text-green">
+          <span className="font-bold">{totalen.aantalKazen} kazen</span> in {gefilterd.length} box{gefilterd.length === 1 ? "" : "en"} ·{" "}
+          {(totalen.nettoGram / 1000).toFixed(1)} kg totaal
+        </div>
+      )}
 
       {gefilterd.length === 0 && <p className="text-sm text-inkSoft text-center mt-8">Geen boxen gevonden.</p>}
 
       {/* ---------- Mobiel: kaartjes ---------- */}
       <div className="flex flex-col gap-2.5 md:hidden">
         {gefilterd.map((box) => {
-          const dagen = leeftijdInDagen(box.productiedatum);
+          const weken = leeftijdInWeken(box.productiedatum);
           const beschikbaar = beschikbaarPerBox[box.boxId];
           const heeftAfroep = beschikbaar !== undefined && beschikbaar < box.aantalKazen;
           return (
@@ -103,7 +204,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
                   <div className="text-inkSoft mt-1">PRODUCTIEDATUM</div>
                   <div className="text-inkSoft mt-1">LEEFTIJD</div>
                   <div className="font-medium">{fmtDatum(box.productiedatum)}</div>
-                  <div className={`font-medium ${dagen > 60 ? "text-goldDeep" : ""}`}>{dagen} dagen</div>
+                  <div className={`font-medium ${weken > 8 ? "text-goldDeep" : ""}`}>{weken} weken</div>
                 </div>
               </div>
             </div>
@@ -130,7 +231,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
           </thead>
           <tbody>
             {gefilterd.map((box) => {
-              const dagen = leeftijdInDagen(box.productiedatum);
+              const weken = leeftijdInWeken(box.productiedatum);
               const beschikbaar = beschikbaarPerBox[box.boxId];
               const heeftAfroep = beschikbaar !== undefined && beschikbaar < box.aantalKazen;
               return (
@@ -154,7 +255,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
                   <td className="py-2.5 px-4">{box.model}</td>
                   <td className="py-2.5 px-4 text-inkSoft">{box.partijcode}</td>
                   <td className="py-2.5 px-4">{fmtDatum(box.productiedatum)}</td>
-                  <td className={`py-2.5 px-4 text-right ${dagen > 60 ? "font-semibold text-goldDeep" : ""}`}>{dagen} dagen</td>
+                  <td className={`py-2.5 px-4 text-right ${weken > 8 ? "font-semibold text-goldDeep" : ""}`}>{weken} weken</td>
                   <td className="py-2.5 px-4 text-right">{box.aantalKazen} stuks</td>
                   <td className="py-2.5 px-4 text-right font-semibold">{(box.nettoGram / 1000).toFixed(1)} kg</td>
                 </tr>

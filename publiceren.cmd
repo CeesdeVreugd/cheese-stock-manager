@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Ondertekening van de inlogmail aangepast naar 'Systeembeheer | Van Beek & De Vreugd Kaas'."
+set "OMSCHRIJVING=Leeftijd in Voorraad nu in weken, plus filters op leverancier en leeftijd met totaaltelling."
 
 echo.
 echo ============================================

@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Uitnodigingsmail bij het aanmaken van een nieuwe gebruiker (aan/uit-schakelaar)."
+set "OMSCHRIJVING=Visuele fix aan de aan/uit-schakelaar bij het aanmaken van een gebruiker."
 
 echo.
 echo ============================================

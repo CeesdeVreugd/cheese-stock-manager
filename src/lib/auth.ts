@@ -147,14 +147,10 @@ export async function vereisOntgrendeldeGebruikerApi() {
 
 // ---------- E-mail versturen ----------
 
-// Verstuurt de inlogcode. Volgorde: Microsoft Graph (Outlook/M365) als dat
-// is ingesteld, anders Resend, en zonder allebei verschijnt de code in de
-// servertermina — zo kun je zonder een cent uit te geven lokaal testen.
-export async function sendLoginCode(email: string, code: string, naam?: string) {
-  const onderwerp = "Je inlogcode voor Cheese Stock Manager";
-  const aanhef = naam ? `Beste ${naam},` : "Beste,";
-  const tekst = `${aanhef}\n\nJe eenmalige inlogcode voor de Cheese Stock Manager-app is: ${code}\n\nDeze code is 10 minuten geldig.\n\nMet vriendelijke groet,\nSysteembeheer | Van Beek & De Vreugd Kaas`;
-
+// Kernfunctie: verstuurt willekeurige tekst-e-mail via dezelfde volgorde als
+// de inlogcodes — Microsoft Graph (Outlook/M365) als dat is ingesteld,
+// anders Resend, en zonder allebei verschijnt de tekst in de servertermina.
+async function verstuurEmail(email: string, onderwerp: string, tekst: string, devLabel: string) {
   const gebruiktGraph = process.env.MS_TENANT_ID && process.env.MS_CLIENT_ID && process.env.MS_CLIENT_SECRET;
   if (gebruiktGraph) {
     const { verstuurMailViaGraph } = await import("@/lib/graph-mail");
@@ -164,7 +160,7 @@ export async function sendLoginCode(email: string, code: string, naam?: string) 
 
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    console.log(`\n[DEV] Inlogcode voor ${email}: ${code}\n`);
+    console.log(`\n[DEV] ${devLabel} voor ${email}:\n${tekst}\n`);
     return;
   }
   const { Resend } = await import("resend");
@@ -175,4 +171,21 @@ export async function sendLoginCode(email: string, code: string, naam?: string) 
     subject: onderwerp,
     text: tekst,
   });
+}
+
+export async function sendLoginCode(email: string, code: string, naam?: string) {
+  const onderwerp = "Je inlogcode voor Cheese Stock Manager";
+  const aanhef = naam ? `Beste ${naam},` : "Beste,";
+  const tekst = `${aanhef}\n\nJe eenmalige inlogcode voor de Cheese Stock Manager-app is: ${code}\n\nDeze code is 10 minuten geldig.\n\nMet vriendelijke groet,\nSysteembeheer | Van Beek & De Vreugd Kaas`;
+  await verstuurEmail(email, onderwerp, tekst, "Inlogcode");
+}
+
+// Uitnodigingsmail voor een nieuw aangemaakte gebruiker. De link wijst naar
+// de startpagina van de app — dat leidt vanzelf naar /login, en na de
+// eerste succesvolle e-mail+code-login wordt automatisch om een pincode
+// gevraagd (§4.2/§4.3). Er is dus bewust geen apart activatie-token nodig.
+export async function sendUitnodiging(email: string, naam: string, appUrl: string) {
+  const onderwerp = "Uitnodiging voor Cheese Stock Manager";
+  const tekst = `Beste ${naam},\n\nJe bent uitgenodigd om de Cheese Stock Manager van Van Beek & De Vreugd Kaas te gaan gebruiken.\n\nKlik op onderstaande link om je account te activeren. Log in met dit e-mailadres (${email}) — je ontvangt dan een eenmalige inlogcode, en wordt daarna gevraagd een pincode aan te maken voor snelle toegang op dit toestel.\n\n${appUrl}\n\nMet vriendelijke groet,\nSysteembeheer | Van Beek & De Vreugd Kaas`;
+  await verstuurEmail(email, onderwerp, tekst, "Uitnodiging");
 }

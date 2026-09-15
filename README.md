@@ -213,6 +213,17 @@ niets aangepast te worden. Zonder deze vier blijft Resend (of, zonder beide,
 de ontwikkelmodus met de code in de servertermina) gewoon werken zoals
 voorheen.
 
+## Uitnodigingsmail bij een nieuwe gebruiker
+
+Bij het aanmaken van een gebruiker staat een schakelaar "Stuur uitnodigingsmail"
+(standaard aan). Die verstuurt een e-mail met een link naar de app, via
+dezelfde route als de inlogcodes (Outlook/Microsoft 365 als dat is
+ingesteld, anders Resend). Er is bewust geen apart activatie-token nodig:
+de link wijst gewoon naar de app zelf, en de normale eerste-keer-inlogflow
+(e-mail + code, daarna een pincode instellen) doet de rest. Lukt het
+versturen niet, dan wordt de gebruiker alsnog gewoon aangemaakt — alleen de
+mail zelf mislukt, dat wordt duidelijk teruggemeld.
+
 ## Rechten per scherm — ook voor nieuwe modules
 
 Elke module heeft een eigen aan/uit-vinkje in **Rollen**, los van de algemene

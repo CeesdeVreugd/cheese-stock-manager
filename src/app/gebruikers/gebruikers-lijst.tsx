@@ -24,24 +24,34 @@ export default function GebruikersLijst({
   const [naam, setNaam] = useState("");
   const [email, setEmail] = useState("");
   const [rolId, setRolId] = useState(rollen[0]?.id ?? "");
+  const [stuurUitnodiging, setStuurUitnodiging] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [teVerwijderen, setTeVerwijderen] = useState<Gebruiker | null>(null);
   const [gereset, setGereset] = useState<string | null>(null);
+  const [uitnodigingStatus, setUitnodigingStatus] = useState<string | null>(null);
 
   async function toevoegen(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     setError(null);
+    setUitnodigingStatus(null);
     try {
       const res = await fetch("/api/gebruikers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ naam, email, rolId }),
+        body: JSON.stringify({ naam, email, rolId, stuurUitnodiging }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Aanmaken mislukt");
       setLijst((l) => [...l, data.gebruiker].sort((a, b) => a.naam.localeCompare(b.naam)));
+      if (stuurUitnodiging) {
+        setUitnodigingStatus(
+          data.uitnodigingVerstuurd
+            ? `Uitnodigingsmail verstuurd naar ${data.gebruiker.email}.`
+            : data.uitnodigingFout || "Uitnodigingsmail kon niet verstuurd worden."
+        );
+      }
       setNaam("");
       setEmail("");
     } catch (err: any) {
@@ -151,9 +161,30 @@ export default function GebruikersLijst({
             </option>
           ))}
         </select>
+
+        <label className="flex items-center justify-between gap-2 rounded-xl bg-cream px-3 py-2.5 cursor-pointer">
+          <span className="text-xs font-semibold text-ink">Stuur uitnodigingsmail</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={stuurUitnodiging}
+            onClick={() => setStuurUitnodiging((v) => !v)}
+            className={`relative w-10 h-6 rounded-full transition-colors flex-shrink-0 ${
+              stuurUitnodiging ? "bg-gold" : "bg-line"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                stuurUitnodiging ? "translate-x-4" : "translate-x-0.5"
+              }`}
+            />
+          </button>
+        </label>
+
         {error && <p className="text-sm text-red-600">{error}</p>}
+        {uitnodigingStatus && <p className="text-xs text-green">{uitnodigingStatus}</p>}
         <button disabled={busy} className="rounded-xl bg-gold py-2.5 text-sm font-bold text-white">
-          Gebruiker aanmaken
+          {busy ? "Bezig…" : "Gebruiker aanmaken"}
         </button>
         <p className="text-[11px] text-inkSoft">
           Geen wachtwoord nodig — de gebruiker logt in met e-mail + eenmalige code (§4.2).

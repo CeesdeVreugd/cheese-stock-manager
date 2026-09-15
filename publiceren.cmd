@@ -12,7 +12,7 @@ REM Jij hoeft alleen deze cmd te draaien, verder niets.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Leeftijd in Voorraad nu in weken, plus filters op leverancier en leeftijd met totaaltelling."
+set "OMSCHRIJVING=Uitnodigingsmail bij het aanmaken van een nieuwe gebruiker (aan/uit-schakelaar)."
 
 echo.
 echo ============================================

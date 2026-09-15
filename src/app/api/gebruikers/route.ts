@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
+import { vereisOntgrendeldeGebruikerApi, sendUitnodiging } from "@/lib/auth";
 import { logActiviteit } from "@/lib/audit";
 
 export async function GET() {
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Alleen een beheerder kan gebruikers aanmaken" }, { status: 403 });
   }
 
-  const { naam, email, rolId } = await req.json();
+  const { naam, email, rolId, stuurUitnodiging } = await req.json();
   if (!naam || typeof naam !== "string" || naam.trim().length === 0) {
     return NextResponse.json({ error: "Naam is verplicht" }, { status: 400 });
   }
@@ -47,5 +47,21 @@ export async function POST(req: NextRequest) {
 
   await logActiviteit(gebruiker, "Gebruiker", `${nieuw.naam} (${nieuw.email}) aangemaakt met rol ${nieuw.rol?.naam}`);
 
-  return NextResponse.json({ gebruiker: nieuw });
+  let uitnodigingVerstuurd = false;
+  let uitnodigingFout: string | null = null;
+  if (stuurUitnodiging) {
+    try {
+      await sendUitnodiging(nieuw.email, nieuw.naam, req.nextUrl.origin);
+      uitnodigingVerstuurd = true;
+      await logActiviteit(gebruiker, "Gebruiker", `Uitnodigingsmail verstuurd naar ${nieuw.email}`);
+    } catch (err: any) {
+      // Het aanmaken van de gebruiker mag nooit mislukken puur omdat de
+      // uitnodigingsmail niet wegkwam — de beheerder kan die later alsnog
+      // handmatig doorgeven. Wel duidelijk terugmelden dat het niet lukte.
+      console.error("Uitnodigingsmail versturen mislukt:", err?.message || err);
+      uitnodigingFout = "Gebruiker is aangemaakt, maar de uitnodigingsmail kon niet verstuurd worden.";
+    }
+  }
+
+  return NextResponse.json({ gebruiker: nieuw, uitnodigingVerstuurd, uitnodigingFout });
 }

@@ -16,7 +16,7 @@ REM (zie SELFHOSTING.md).
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Containernamen in de Docker-opzet hernoemd naar cheesestockmanager-app/-postgres."
+set "OMSCHRIJVING=Fix: docker-compose.yml verwachtte een niet-bestaand .env.docker-bestand; gebruikt nu Portainer's eigen omgevingsvariabelen direct."
 
 echo.
 echo ============================================

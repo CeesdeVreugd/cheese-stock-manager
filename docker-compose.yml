@@ -1,0 +1,55 @@
+services:
+  # ---------- De webapp zelf ----------
+  cheese-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cheesestockmanager-app
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - intern
+      - npm_default
+    # BEWUST geen "ports:" hier — deze container is alleen bereikbaar via
+    # het interne netwerk. Nginx Proxy Manager (een aparte stack, niet hier
+    # in deze compose-file) bereikt 'm via het gedeelde npm_default-netwerk
+    # hieronder, gewoon bij naam: "cheesestockmanager-app", poort 3000.
+
+  # ---------- De database ----------
+  postgres:
+    image: postgres:16-alpine
+    container_name: cheesestockmanager-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cheesestock
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: cheesestock
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - intern
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cheesestock"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    # Bewust geen "ports:" — Postgres is uitsluitend bereikbaar voor
+    # cheesestockmanager-app op het interne netwerk, staat expres niet eens op het
+    # npm_default-netwerk (Nginx Proxy Manager hoeft de database nooit te
+    # kunnen bereiken, alleen de app).
+
+networks:
+  intern:
+    driver: bridge
+  # Dit netwerk bestaat al (aangemaakt door de losse NPM-stack in
+  # Portainer) — we sluiten er hier alleen bewust bij aan ("external"),
+  # in plaats van dat deze compose-file het zelf opnieuw aanmaakt.
+  npm_default:
+    external: true
+
+volumes:
+  postgres-data:

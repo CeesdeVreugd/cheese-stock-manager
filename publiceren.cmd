@@ -8,11 +8,15 @@ REM 4) zet standaardwaarden klaar (db:seed) - raakt nooit bestaande, zelf
 REM    aangepaste gegevens aan, alleen ontbrekende standaardwaarden
 REM 5) commit en pusht de wijziging, met een omschrijving die al is ingevuld
 REM Jij hoeft alleen deze cmd te draaien, verder niets.
+REM
+REM De zelfgehoste VM wordt hier bewust niet meer bijgewerkt: dat regelt
+REM Portainer voortaan zelf, rechtstreeks vanuit dezelfde GitHub-push
+REM (zie SELFHOSTING.md).
 
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Uitnodigingsmail ook opnieuw te versturen bij bestaande gebruikers."
+set "OMSCHRIJVING=Containernamen in de Docker-opzet hernoemd naar cheesestockmanager-app/-postgres."
 
 echo.
 echo ============================================
@@ -89,7 +93,7 @@ if %errorlevel% NEQ 0 (
 
 echo.
 echo ============================================
-echo  Stap 5/5: publiceren
+echo  Stap 5/5: publiceren naar Vercel
 echo ============================================
 git add .
 git commit -m "%OMSCHRIJVING%"
@@ -101,4 +105,7 @@ echo  Klaar!
 echo ============================================
 echo Vercel bouwt en publiceert de nieuwe versie automatisch
 echo ^(te volgen op vercel.com, meestal binnen 1-2 minuten^).
+echo.
+echo De zelfgehoste VM ^(via Portainer^) haalt deze wijziging nu ook zelf op
+echo — zie SELFHOSTING.md voor hoe je dat daar bevestigt/controleert.
 pause

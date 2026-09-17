@@ -1,5 +1,13 @@
 # Cheese Stock Manager — werkend prototype
 
+> **Let op — actuele situatie:** deze app draait niet meer op Vercel/Neon.
+> Die zijn bewust volledig opgeheven; de app draait nu zelfgehost op een
+> eigen VM via Docker/Portainer. Zie **`SELFHOSTING.md`** voor hoe dat werkt
+> en hoe je een update uitrolt. De rest van dit document (met name de
+> Vercel/Neon-stappen hieronder) is **historisch** — bewaard omdat het nog
+> beschrijft hoe de app zelf in elkaar zit (datamodel, schermen, features),
+> maar de daadwerkelijke hosting-stappen daarin gelden niet meer.
+
 Dit is een werkende versie van de app uit het technisch ontwerpdocument:
 inloggen met e-mail + code, inslag, uitslag (met QR-scan), voorraad,
 leveranciersbeheer en een facturatiemodule met PDF-export — met een echte
@@ -13,7 +21,7 @@ niet zelf gebouwd/gedraaid — dat kon niet vanuit de omgeving waarin dit is
 gemaakt (geen internettoegang om packages te installeren). Volg onderstaande
 stappen; als je ergens een foutmelding tegenkomt, kun je die gewoon terugkoppelen.
 
-## 1. Gratis accounts aanmaken (eenmalig, kost niets)
+## 1. Gratis accounts aanmaken (eenmalig, kost niets) — HISTORISCH, niet meer van toepassing
 
 1. **GitHub** (github.com) — voor de broncode.
 2. **Neon** (neon.tech) — gratis PostgreSQL-database. Maak een project aan en
@@ -66,26 +74,15 @@ automatisch (Vercel levert altijd HTTPS).
 
 ## Wijzigingen publiceren
 
-`publiceren.cmd` is volledig automatisch, van uitpakken tot live: hij kopieert
-de bestanden naar je vaste projectmap (en ruimt daar verouderde bestanden op),
-draait `npm install`, werkt de database bij (`prisma db push`), zet
-standaardwaarden klaar (`db:seed`), en commit + pusht — allemaal met één
-dubbelklik. Je hoeft de uitgepakte map nergens specifiek neer te zetten — pak
-'m uit, bijvoorbeeld in Downloads, en dubbelklik op `publiceren.cmd`.
+`publiceren.cmd` doet nog maar één ding: de bestanden naar je vaste
+projectmap kopiëren (en daar verouderde bestanden opruimen), en committen +
+pushen naar GitHub. Verder niets — geen lokale database-stap meer, want de
+VM regelt zijn eigen migratie/seed zelf bij het opstarten van de container
+(zie `docker-entrypoint.sh` en `SELFHOSTING.md`).
 
-**Eén bewuste afweging:** de database-stap gebruikt `--accept-data-loss`, wat
-betekent dat een waarschuwing over dataverlies (zoals je eerder handmatig met
-"y" bevestigde) nu automatisch wordt geaccepteerd, zonder te vragen. Dat is
-precies wat "geen omkijken naar" vraagt, maar betekent ook dat een
-schemawijziging die een keer écht belangrijke data zou raken, zonder
-tussenstop wordt doorgevoerd. Voor deze testfase is dat een prima afweging;
-zodra er echte bedrijfsdata in staat waar je niet per ongeluk iets van kwijt
-wilt raken, is het verstandig om dit stukje er weer uit te halen en
-database-wijzigingen dan bewust handmatig te bevestigen.
-
-`db:seed` is veilig om steeds opnieuw te draaien: het zet alleen ontbrekende
-standaardwaarden (rollen, validatielijst-items) klaar en raakt nooit gegevens
-aan die je zelf al hebt aangepast.
+Na het pushen haalt de VM (via Portainer) de wijziging zelf op — daarvoor
+klik je in Portainer op **"Pull and redeploy"** bij de
+`cheese-stock-manager`-stack (met "Re-pull image and redeploy" aan).
 
 ## Webapp installeren (pc en telefoon)
 

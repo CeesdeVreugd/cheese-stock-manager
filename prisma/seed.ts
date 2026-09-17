@@ -35,20 +35,9 @@ async function main() {
           canActiviteiten: false,
           ontvangtAfroepMeldingen: true,
         },
-        {
-          naam: "Lezer",
-          canInslag: false,
-          canUitslag: false,
-          canVoorraad: true,
-          canFacturatie: true,
-          canReserveren: false,
-          canBeheer: false,
-          canActiviteiten: false,
-          ontvangtAfroepMeldingen: false,
-        },
       ],
     });
-    console.log("Standaardrollen aangemaakt: Beheerder, Medewerker, Lezer.");
+    console.log("Standaardrollen aangemaakt: Beheerder, Medewerker.");
   } else {
     console.log("Rollen bestaan al — hier niets aan veranderd (pas rechten aan via /rollen).");
   }

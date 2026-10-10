@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#223B2C",
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -58,7 +59,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               openAfroepen={openAfroepen}
             />
           )}
-          <div className={`md:flex-1 md:min-w-0 ${gebruiker && gebruiker.rol ? "pb-20 md:pb-0" : ""}`}>
+          <div className={`md:flex-1 md:min-w-0 ${gebruiker && gebruiker.rol ? "pb-28 md:pb-0" : ""}`}>
             <InstallBanner />
             {children}
           </div>

@@ -32,7 +32,7 @@ export default function MobieleOnderbalk({ rol, openAfroepen = 0 }: { rol: Rol; 
   return (
     <nav
       className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-line"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 14px)" }}
       aria-label="Snelle knoppen"
     >
       <div className="flex">

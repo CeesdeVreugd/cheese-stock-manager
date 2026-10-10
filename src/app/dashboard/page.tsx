@@ -50,12 +50,12 @@ export default async function DashboardPage() {
       {/* ---------- Mobiel ---------- */}
       <div className="md:hidden">
         <div className="bg-green px-6 pt-8 pb-6 rounded-b-3xl">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo-emblem.png" alt="" className="h-8 w-auto flex-shrink-0" />
-            <h1 className="flex items-baseline justify-between flex-1 min-w-0 whitespace-nowrap">
-              <span className="text-[11px] font-semibold text-white/70">Van Beek &amp; De Vreugd Kaas</span>
-              <span className="font-serif text-[15px] font-semibold text-white">Cheese Stock Manager</span>
-            </h1>
+          <div className="flex items-center justify-between gap-3 whitespace-nowrap">
+            <div className="flex items-center gap-2 min-w-0">
+              <img src="/logo-emblem.png" alt="" className="h-7 w-auto flex-shrink-0" />
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-white/70 truncate">Van Beek &amp; De Vreugd Kaas</span>
+            </div>
+            <h1 className="font-serif text-[13px] font-semibold text-white flex-shrink-0">Cheese Stock Manager</h1>
           </div>
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs uppercase tracking-wide text-white/60">Actuele voorraad</p>
@@ -95,38 +95,36 @@ export default async function DashboardPage() {
           {overzichten.length > 0 && (
             <>
               <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5">Overzichten</p>
-              {overzichten.map((o) => (
-                <Link
-                  key={o.href}
-                  href={o.href}
-                  className="flex items-center justify-between rounded-2xl border-[1.5px] border-line bg-white p-3.5 mb-2.5"
-                >
-                  <div>
-                    <div className="text-sm font-semibold">{o.label}</div>
-                    <div className="text-xs text-inkSoft">{o.sub}</div>
-                  </div>
-                  <span className="text-inkSoft">›</span>
-                </Link>
-              ))}
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {overzichten.map((o) => (
+                  <Link
+                    key={o.href}
+                    href={o.href}
+                    className="rounded-2xl border-[1.5px] border-line bg-white p-3.5 flex flex-col gap-1 min-h-[84px]"
+                  >
+                    <span className="text-sm font-semibold">{o.label}</span>
+                    <span className="text-xs text-inkSoft">{o.sub}</span>
+                  </Link>
+                ))}
+              </div>
             </>
           )}
 
           {beheer.length > 0 && (
             <>
-              <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5 mt-4">Beheer</p>
-              {beheer.map((o) => (
-                <Link
-                  key={o.href}
-                  href={o.href}
-                  className="flex items-center justify-between rounded-2xl border-[1.5px] border-line bg-white p-3.5 mb-2.5"
-                >
-                  <div>
-                    <div className="text-sm font-semibold">{o.label}</div>
-                    <div className="text-xs text-inkSoft">{o.sub}</div>
-                  </div>
-                  <span className="text-inkSoft">›</span>
-                </Link>
-              ))}
+              <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5">Beheer</p>
+              <div className="grid grid-cols-2 gap-3">
+                {beheer.map((o) => (
+                  <Link
+                    key={o.href}
+                    href={o.href}
+                    className="rounded-2xl border-[1.5px] border-line bg-white p-3.5 flex flex-col gap-1 min-h-[84px]"
+                  >
+                    <span className="text-sm font-semibold">{o.label}</span>
+                    <span className="text-xs text-inkSoft">{o.sub}</span>
+                  </Link>
+                ))}
+              </div>
             </>
           )}
         </div>

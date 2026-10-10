@@ -25,6 +25,12 @@ function fmtDatum(iso: string) {
   return new Date(iso).toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Amsterdam" });
 }
 
+type BoxStatus = {
+  inslag: { datum: string; partijcode: string; productafkomst: string; model: string; aantalKazen: number } | null;
+  laatsteUitslag: { datum: string; type: string; aantalKazen: number; partijcode: string } | null;
+};
+type ScanUitkomst = { soort: "ok" | "laden" | "weg" | "onbekend"; boxId: number; status?: BoxStatus };
+
 export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen: Box[]; beschikbaarPerBox?: Record<number, number> }) {
   const [zoek, setZoek] = useState("");
   const [productafkomstFilter, setProductafkomstFilter] = useState("");
@@ -32,6 +38,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
   const [leeftijdTotEnMet, setLeeftijdTotEnMet] = useState("");
   const [scanning, setScanning] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [scanUitkomst, setScanUitkomst] = useState<ScanUitkomst | null>(null);
 
   // Alle productafkomst-waarden die op dit moment daadwerkelijk in
   // voorraad zijn — dit is de "leverancier"-achtige indeling die er in de
@@ -66,9 +73,31 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
 
   const filtersActief = !!(productafkomstFilter || leeftijdVanaf || leeftijdTotEnMet);
 
-  function scanResultaat(waarde: string) {
+  async function scanResultaat(waarde: string) {
     setScanning(false);
-    setZoek(waarde);
+    // Het label bevat alleen het BoxID; andere waarden gaan als zoektekst door.
+    const nummer = /^\s*#?(\d{1,9})\s*$/.exec(waarde)?.[1];
+    if (!nummer) {
+      setScanUitkomst(null);
+      setZoek(waarde);
+      return;
+    }
+    const boxId = Number(nummer);
+    setZoek(String(boxId));
+    if (boxen.some((b) => b.boxId === boxId)) {
+      setScanUitkomst({ soort: "ok", boxId });
+      return;
+    }
+    // Niet in de lijst: vraag op wat er met deze box is gebeurd.
+    setScanUitkomst({ soort: "laden", boxId });
+    try {
+      const res = await fetch(`/api/box/${boxId}/status`, { credentials: "same-origin" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Status ophalen mislukt");
+      setScanUitkomst({ soort: data.bekend ? "weg" : "onbekend", boxId, status: data });
+    } catch {
+      setScanUitkomst({ soort: "weg", boxId });
+    }
   }
 
   function wisFilters() {
@@ -82,16 +111,16 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
       <div className="flex gap-2 mb-3">
         <input
           value={zoek}
-          onChange={(e) => setZoek(e.target.value)}
+          onChange={(e) => { setZoek(e.target.value); setScanUitkomst(null); }}
           placeholder="Zoek op BoxID, partijcode of productafkomst"
           className="input flex-1"
         />
         <button
           type="button"
           onClick={() => setScanning(true)}
-          className="rounded-xl border-[1.5px] border-dashed border-goldDeep bg-goldSoft px-4 text-xs font-semibold text-goldDeep whitespace-nowrap"
+          className="rounded-xl bg-gold px-4 text-sm font-semibold text-white whitespace-nowrap"
         >
-          Scan box
+          Scan QR
         </button>
       </div>
 
@@ -155,6 +184,47 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
 
       {scanning && <QrScanner onResult={scanResultaat} onClose={() => setScanning(false)} />}
 
+      {scanUitkomst && (
+        <div
+          className={`rounded-xl px-3.5 py-3 mb-4 text-sm border-[1.5px] ${
+            scanUitkomst.soort === "ok"
+              ? "bg-greenSoft border-green/30 text-green"
+              : scanUitkomst.soort === "laden"
+              ? "bg-white border-line text-inkSoft"
+              : "bg-red-50 border-red-300 text-red-800"
+          }`}
+        >
+          {scanUitkomst.soort === "ok" && (
+            <span>
+              <span className="font-bold">Box #{scanUitkomst.boxId}</span> zit in de voorraad.
+            </span>
+          )}
+          {scanUitkomst.soort === "laden" && <span>Box #{scanUitkomst.boxId} wordt gecontroleerd…</span>}
+          {scanUitkomst.soort === "onbekend" && (
+            <span>
+              <span className="font-bold">Box #{scanUitkomst.boxId}</span> is niet bekend in de app (nooit ingeslagen).
+            </span>
+          )}
+          {scanUitkomst.soort === "weg" && (
+            <div>
+              <div className="font-bold">Box #{scanUitkomst.boxId} zit niet (meer) in de voorraad.</div>
+              {scanUitkomst.status?.laatsteUitslag && (
+                <div className="text-xs mt-1">
+                  Uitgeslagen op {fmtDatum(scanUitkomst.status.laatsteUitslag.datum)} ({scanUitkomst.status.laatsteUitslag.aantalKazen} kazen,{" "}
+                  {scanUitkomst.status.laatsteUitslag.type === "volledig" ? "hele box" : "deel van de box"}
+                  {scanUitkomst.status.laatsteUitslag.partijcode ? `, partij ${scanUitkomst.status.laatsteUitslag.partijcode}` : ""}).
+                </div>
+              )}
+              {scanUitkomst.status?.inslag && (
+                <div className="text-xs mt-0.5">
+                  Ingeslagen op {fmtDatum(scanUitkomst.status.inslag.datum)} · {scanUitkomst.status.inslag.productafkomst} · {scanUitkomst.status.inslag.model}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {(filtersActief || zoek) && gefilterd.length > 0 && (
         <div className="rounded-xl bg-greenSoft px-3.5 py-2.5 mb-4 text-sm text-green">
           <span className="font-bold">{totalen.aantalKazen} kazen</span> in {gefilterd.length} box{gefilterd.length === 1 ? "" : "en"} ·{" "}
@@ -162,7 +232,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
         </div>
       )}
 
-      {gefilterd.length === 0 && <p className="text-sm text-inkSoft text-center mt-8">Geen boxen gevonden.</p>}
+      {gefilterd.length === 0 && !scanUitkomst && <p className="text-sm text-inkSoft text-center mt-8">Geen boxen gevonden.</p>}
 
       {/* ---------- Mobiel: kaartjes ---------- */}
       <div className="flex flex-col gap-2.5 md:hidden">

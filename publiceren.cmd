@@ -15,7 +15,7 @@ REM Dit script kopieert alles wat naast het script staat.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=PDF-viewer met verzenden en afdrukken, onderbalk op mobiel, nieuwe kop, Terug-knoppen en datumveld."
+set "OMSCHRIJVING=Scanknop bij Voorraad met melding als een box niet meer in de voorraad zit."
 
 REM ---- Veiligheidscontrole: staat dit script echt in de uitgepakte app-map? ----
 REM Zonder deze controle zou een zip die per ongeluk in bijvoorbeeld Downloads

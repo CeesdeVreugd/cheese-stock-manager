@@ -1,5 +1,6 @@
 "use client";
 
+import TerugKnop from "@/components/terug-knop";
 import { fmtGetal } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -81,9 +82,7 @@ export default function UitslagForm({
   return (
     <div className="min-h-screen flex flex-col md:min-h-0 md:max-w-3xl md:mx-auto md:my-10 md:rounded-3xl md:border md:border-line md:shadow-xl md:bg-cream md:overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-6 pb-3 md:px-8">
-        <Link href="/dashboard" className="text-sm font-semibold text-green">
-          ‹ Terug
-        </Link>
+        <TerugKnop href="/dashboard" className="text-sm font-semibold text-green">‹ Terug</TerugKnop>
         <h1 className="font-serif font-semibold text-green md:text-lg">Uitslag</h1>
         <div className="w-12" />
       </div>

@@ -42,7 +42,7 @@ async function haalGraphToken(): Promise<string> {
   return gecachedToken.token;
 }
 
-export type GraphBijlage = { naam: string; contentType: string; base64: string; contentId: string };
+export type GraphBijlage = { naam: string; contentType: string; base64: string; contentId?: string; inline?: boolean };
 
 export async function verstuurMailViaGraph(naar: string, onderwerp: string, tekst: string, html?: string, bijlagen?: GraphBijlage[]) {
   const afzender = process.env.MS_SENDER_EMAIL;
@@ -72,8 +72,8 @@ export async function verstuurMailViaGraph(naar: string, onderwerp: string, teks
                 name: b.naam,
                 contentType: b.contentType,
                 contentBytes: b.base64,
-                isInline: true,
-                contentId: b.contentId,
+                isInline: b.inline !== false,
+                ...(b.contentId ? { contentId: b.contentId } : {}),
               })),
             }
           : {}),

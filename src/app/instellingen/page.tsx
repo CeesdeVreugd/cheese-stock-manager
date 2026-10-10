@@ -1,3 +1,4 @@
+import TerugKnop from "@/components/terug-knop";
 import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import OntgrendelGate from "@/components/ontgrendel-gate";
@@ -23,9 +24,7 @@ export default async function InstellingenPage() {
     <OntgrendelGate>
       <div className="min-h-screen flex flex-col md:min-h-0">
         <div className="flex items-center justify-between px-4 pt-6 pb-3 md:hidden">
-          <Link href="/dashboard" className="text-sm font-semibold text-green">
-            ‹ Terug
-          </Link>
+          <TerugKnop href="/dashboard" className="text-sm font-semibold text-green">‹ Terug</TerugKnop>
           <h1 className="font-serif font-semibold text-green">Instellingen</h1>
           <div className="w-12" />
         </div>

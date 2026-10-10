@@ -1,3 +1,4 @@
+import TerugKnop from "@/components/terug-knop";
 import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -38,9 +39,7 @@ export default async function VoorraadPage() {
         <div className="md:hidden">
           <div className="bg-green px-6 pt-8 pb-6 rounded-b-3xl">
             <div className="flex items-center justify-between mb-1">
-              <Link href="/dashboard" className="text-sm font-semibold text-white/80">
-                ‹ Terug
-              </Link>
+              <TerugKnop href="/dashboard" className="text-sm font-semibold text-white/80">‹ Terug</TerugKnop>
               <div className="flex items-center gap-2">
                 <span className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd Kaas</span>
                 <img src="/logo-emblem.png" alt="" className="h-6 w-auto" />

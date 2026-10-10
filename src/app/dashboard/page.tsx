@@ -50,14 +50,15 @@ export default async function DashboardPage() {
       {/* ---------- Mobiel ---------- */}
       <div className="md:hidden">
         <div className="bg-green px-6 pt-8 pb-6 rounded-b-3xl">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-3">
-              <img src="/logo-emblem.png" alt="" className="h-9 w-auto" />
-              <div>
-                <div className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd Kaas</div>
-                <h1 className="font-serif text-lg font-semibold text-white leading-tight">Cheese Stock Manager</h1>
-              </div>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <img src="/logo-emblem.png" alt="" className="h-8 w-auto flex-shrink-0" />
+            <h1 className="flex items-baseline justify-between flex-1 min-w-0 whitespace-nowrap">
+              <span className="text-[11px] font-semibold text-white/70">Van Beek &amp; De Vreugd Kaas</span>
+              <span className="font-serif text-[15px] font-semibold text-white">Cheese Stock Manager</span>
+            </h1>
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-xs uppercase tracking-wide text-white/60">Actuele voorraad</p>
             <div className="flex items-center gap-3">
               <Link href="/profiel" className="text-xs font-semibold text-white/70 underline">
                 Profiel
@@ -65,7 +66,6 @@ export default async function DashboardPage() {
               <UitloggenKnop className="text-xs font-semibold text-white/70 underline" />
             </div>
           </div>
-          <p className="mt-4 text-xs uppercase tracking-wide text-white/60">Actuele voorraad</p>
           <div className="mt-2 grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-white/10 px-4 py-3">
               <p className="font-serif text-3xl font-semibold text-white leading-none">{aantalBoxen}</p>
@@ -90,26 +90,6 @@ export default async function DashboardPage() {
               </div>
               <span className="text-goldDeep">›</span>
             </Link>
-          )}
-
-          {acties.length > 0 && (
-            <>
-              <p className="text-xs font-bold uppercase tracking-wide text-inkSoft mb-2.5">Registreren</p>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {acties.map((t) => (
-                  <Link
-                    key={t.href}
-                    href={t.href}
-                    className={`rounded-2xl border-[1.5px] p-4 flex flex-col gap-3 min-h-[92px] ${
-                      t.primary ? "bg-gold border-gold text-white" : "bg-white border-line"
-                    }`}
-                  >
-                    <span className="font-semibold text-sm">{t.label}</span>
-                    <span className={`text-xs ${t.primary ? "text-white/80" : "text-inkSoft"}`}>{t.sub}</span>
-                  </Link>
-                ))}
-              </div>
-            </>
           )}
 
           {overzichten.length > 0 && (
@@ -156,7 +136,12 @@ export default async function DashboardPage() {
       <div className="hidden md:block md:px-10 md:py-10 md:max-w-6xl">
         <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd Kaas</p>
+            <div className="flex items-center gap-3 mb-3 whitespace-nowrap">
+              <img src="/logo-emblem.png" alt="" className="h-10 w-auto" />
+              <span className="text-sm font-semibold uppercase tracking-wide text-inkSoft">Van Beek &amp; De Vreugd Kaas</span>
+              <span className="text-line">|</span>
+              <span className="font-serif text-lg font-semibold text-green">Cheese Stock Manager</span>
+            </div>
             <h1 className="font-serif text-3xl font-semibold text-green">Hoofdscherm</h1>
           </div>
           <div>

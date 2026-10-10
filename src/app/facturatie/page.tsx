@@ -1,3 +1,4 @@
+import TerugKnop from "@/components/terug-knop";
 import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/facturatie";
@@ -39,7 +40,7 @@ export default async function FacturatiePage({
     },
   ];
 
-  const pdfHref = `/api/facturatie/pdf?week=${generatieDatum.toISOString()}`;
+  const pdfHref = `/facturatie/pdf?week=${generatieDatum.toISOString()}`;
 
   return (
     <OntgrendelGate>
@@ -48,9 +49,7 @@ export default async function FacturatiePage({
         <div className="md:hidden">
           <div className="bg-green px-6 pt-8 pb-6 rounded-b-3xl">
             <div className="flex items-center justify-between mb-1">
-              <Link href="/dashboard" className="text-sm font-semibold text-white/80">
-                ‹ Terug
-              </Link>
+              <TerugKnop href="/dashboard" className="text-sm font-semibold text-white/80">‹ Terug</TerugKnop>
               <div className="flex items-center gap-2">
                 <span className="text-xs uppercase tracking-wide text-white/60">Van Beek &amp; De Vreugd Kaas</span>
                 <img src="/logo-emblem.png" alt="" className="h-6 w-auto" />
@@ -58,7 +57,7 @@ export default async function FacturatiePage({
             </div>
             <h1 className="font-serif text-xl font-semibold text-white mb-4">Facturatie</h1>
             <div className="flex items-center justify-between">
-              <Link href={`/facturatie?week=${vorige}`} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-white text-sm">
+              <Link replace href={`/facturatie?week=${vorige}`} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-white text-sm">
                 ‹
               </Link>
               <div className="text-center">
@@ -68,7 +67,7 @@ export default async function FacturatiePage({
               {isHuidigeWeek ? (
                 <span className="rounded-lg px-2.5 py-1.5 text-white/30 text-sm">›</span>
               ) : (
-                <Link href={`/facturatie?week=${volgende}`} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-white text-sm">
+                <Link replace href={`/facturatie?week=${volgende}`} className="rounded-lg bg-white/15 px-2.5 py-1.5 text-white text-sm">
                   ›
                 </Link>
               )}
@@ -87,15 +86,15 @@ export default async function FacturatiePage({
               ))}
             </div>
 
-            <a
+            <Link
               href={pdfHref}
               className="flex items-center justify-center gap-2 rounded-xl border-[1.5px] border-dashed border-goldDeep bg-goldSoft py-3.5 text-sm font-bold text-goldDeep"
             >
-              Download volledig PDF-rapport
-            </a>
+              Bekijk PDF-rapport
+            </Link>
 
             <p className="text-[11px] text-inkSoft text-center mt-3">
-              Vier tabbladen zoals gebruikelijk: Inslag, Opslag, Uitslag Standaard, Uitslag Geëtiketteerd (§8).
+              Vier tabbladen zoals gebruikelijk: Inslag, Opslag, Uitslag Standaard, Uitslag Geëtiketteerd.
             </p>
           </div>
         </div>
@@ -105,7 +104,7 @@ export default async function FacturatiePage({
           <div className="flex items-center justify-between mb-8">
             <h1 className="font-serif text-3xl font-semibold text-green">Facturatie</h1>
             <div className="flex items-center gap-3">
-              <Link href={`/facturatie?week=${vorige}`} className="rounded-lg bg-greenSoft px-3 py-2 text-green text-sm font-semibold">
+              <Link replace href={`/facturatie?week=${vorige}`} className="rounded-lg bg-greenSoft px-3 py-2 text-green text-sm font-semibold">
                 ‹ Vorige week
               </Link>
               <div className="text-center px-2">
@@ -115,7 +114,7 @@ export default async function FacturatiePage({
               {isHuidigeWeek ? (
                 <span className="rounded-lg px-3 py-2 text-inkSoft/40 text-sm">Volgende week ›</span>
               ) : (
-                <Link href={`/facturatie?week=${volgende}`} className="rounded-lg bg-greenSoft px-3 py-2 text-green text-sm font-semibold">
+                <Link replace href={`/facturatie?week=${volgende}`} className="rounded-lg bg-greenSoft px-3 py-2 text-green text-sm font-semibold">
                   Volgende week ›
                 </Link>
               )}
@@ -132,14 +131,14 @@ export default async function FacturatiePage({
             ))}
           </div>
 
-          <a
+          <Link
             href={pdfHref}
             className="inline-flex items-center gap-2 rounded-xl border-[1.5px] border-dashed border-goldDeep bg-goldSoft px-6 py-3.5 text-sm font-bold text-goldDeep"
           >
-            Download volledig PDF-rapport
-          </a>
+            Bekijk PDF-rapport
+          </Link>
           <p className="text-xs text-inkSoft mt-3">
-            Vier tabbladen zoals gebruikelijk: Inslag, Opslag, Uitslag Standaard, Uitslag Geëtiketteerd (§8).
+            Vier tabbladen zoals gebruikelijk: Inslag, Opslag, Uitslag Standaard, Uitslag Geëtiketteerd.
           </p>
         </div>
       </div>

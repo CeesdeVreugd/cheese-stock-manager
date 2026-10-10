@@ -1,3 +1,4 @@
+import TerugKnop from "@/components/terug-knop";
 import Link from "next/link";
 import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -28,9 +29,7 @@ export default async function RollenPage() {
         {/* ---------- Mobiel ---------- */}
         <div className="md:hidden flex flex-col flex-1">
           <div className="flex items-center justify-between px-4 pt-6 pb-3">
-            <Link href="/dashboard" className="text-sm font-semibold text-green">
-              ‹ Terug
-            </Link>
+            <TerugKnop href="/dashboard" className="text-sm font-semibold text-green">‹ Terug</TerugKnop>
             <h1 className="font-serif font-semibold text-green">Rollen</h1>
             <div className="w-12" />
           </div>

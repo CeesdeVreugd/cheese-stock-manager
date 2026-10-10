@@ -6,6 +6,8 @@ import AppSidebar from "@/components/app-sidebar";
 import RegisterSW from "@/components/register-sw";
 import InstallBanner from "@/components/install-banner";
 import AutoMeldingen from "@/components/auto-meldingen";
+import MobieleOnderbalk from "@/components/mobiele-onderbalk";
+import { PadVolger } from "@/components/terug-knop";
 
 export const metadata: Metadata = {
   title: "Cheese Stock Manager",
@@ -39,6 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="bg-cream text-ink font-sans">
         <RegisterSW />
+        <PadVolger />
         {gebruiker && gebruiker.rol?.ontvangtAfroepMeldingen && <AutoMeldingen />}
         {/*
           Twee écht verschillende indelingen, geen uitgerekte telefoonpagina:
@@ -55,11 +58,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               openAfroepen={openAfroepen}
             />
           )}
-          <div className="md:flex-1 md:min-w-0">
+          <div className={`md:flex-1 md:min-w-0 ${gebruiker && gebruiker.rol ? "pb-20 md:pb-0" : ""}`}>
             <InstallBanner />
             {children}
           </div>
         </div>
+        {gebruiker && gebruiker.rol && <MobieleOnderbalk rol={gebruiker.rol} openAfroepen={openAfroepen} />}
       </body>
     </html>
   );

@@ -29,6 +29,61 @@ body {
    omliggende container. Dit normaliseert het uiterlijk zodat het aansluit
    bij de overige velden. */
 input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  min-height: 3.1rem;
+  text-align: left;
+  overflow: hidden;
+}
+input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
   min-width: 0;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin-left: auto;
+}
+
+/* Afdrukken van de ingebouwde PDF-viewer: alleen de PDF-pagina's, A4 liggend,
+   zonder menu's of knoppen. De klasse print-pdf wordt alleen tijdens het
+   afdrukken op <body> gezet. */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+  body.print-pdf * {
+    visibility: hidden !important;
+  }
+  body.print-pdf #pdf-print,
+  body.print-pdf #pdf-print * {
+    visibility: visible !important;
+  }
+  body.print-pdf #pdf-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #fff !important;
+  }
+  body.print-pdf #pdf-print canvas {
+    display: block;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    break-after: page;
+    page-break-after: always;
+  }
+  body.print-pdf #pdf-print canvas:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
 }

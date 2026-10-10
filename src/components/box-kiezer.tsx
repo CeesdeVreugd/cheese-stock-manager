@@ -66,7 +66,7 @@ export default function BoxKiezer({
 
       {gefilterd.length === 0 && <p className="text-sm text-inkSoft text-center mt-4">Geen boxen gevonden.</p>}
 
-      <div className="flex flex-col gap-2 max-h-[420px] overflow-y-auto">
+      <div className="flex flex-col gap-2 min-h-[200px] max-h-[calc(100dvh-21rem)] md:max-h-[480px] overflow-y-auto">
         {gefilterd.map((box) => {
           const beschikbaar = beschikbaarPerBox ? beschikbaarPerBox[box.boxId] ?? box.aantalKazen : null;
           const volledigOp = beschikbaar !== null && beschikbaar <= 0;

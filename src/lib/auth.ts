@@ -187,6 +187,9 @@ async function verstuurEmail(email: string, onderwerp: string, tekst: string, de
     subject: onderwerp,
     text: tekst,
     ...(html ? { html } : {}),
+    ...(bijlagen?.length
+      ? { attachments: bijlagen.map((b) => ({ filename: b.naam, content: Buffer.from(b.base64, "base64"), ...(b.contentId ? { contentId: b.contentId } : {}) })) }
+      : {}),
   });
 }
 
@@ -243,4 +246,24 @@ export async function sendUitnodiging(email: string, naam: string, appUrl: strin
     logoUrl: logo.logoUrl,
   };
   await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Uitnodiging", bouwMailHtml(inhoud), logo.bijlagen);
+}
+
+// Facturatieoverzicht (PDF) per e-mail versturen. De PDF gaat als gewone
+// bijlage mee, het logo (alleen bij Graph) als inline afbeelding.
+export async function sendFacturatieOverzicht(email: string, afzenderNaam: string, weekTekst: string, periode: string, bestandsnaam: string, pdf: Uint8Array) {
+  const logo = logoVoorMail();
+  const onderwerp = `Facturatieoverzicht ${weekTekst}`;
+  const inhoud: MailInhoud = {
+    aanhef: "Hallo,",
+    regelsVoor: [
+      `Hierbij het facturatieoverzicht van ${weekTekst} (${periode}) van Van Beek & De Vreugd Kaas, als PDF in de bijlage.`,
+      `Verstuurd door ${afzenderNaam} via Cheese Stock Manager.`,
+    ],
+    logoUrl: logo.logoUrl,
+  };
+  const bijlagen = [
+    ...(logo.bijlagen ?? []),
+    { naam: bestandsnaam, contentType: "application/pdf", base64: Buffer.from(pdf).toString("base64"), inline: false },
+  ];
+  await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Facturatieoverzicht", bouwMailHtml(inhoud), bijlagen);
 }

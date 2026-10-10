@@ -102,3 +102,16 @@ aan de VM-kant.
 Deze opzet start met een **lege** database. Het overzetten van de
 bestaande gegevens (uit Neon, of uiteindelijk uit de Excel) is een aparte,
 latere stap — zie het eerdere migratie-stappenplan.
+
+
+---
+
+## Eenmalige import uit het oude Excel-systeem
+
+1. Maak met `excel_naar_import.py` (staat niet in de app, alleen bij de beheerder) uit een **kopie** van de Excel het bestand `import-data.json`.
+   Het bestand bevat echte bedrijfsgegevens — zet het **nooit** in Git.
+2. Open in de app **Beheer → Importeren**, kies het bestand en draai eerst de **proef** (schrijft niets weg).
+3. Ziet de proef er goed uit en is de database nog leeg? Vink aan en klik **Nu importeren**. Alles gebeurt in één databasetransactie: het lukt helemaal of niet.
+4. Na de import rekent de app de voorraad van elke snapshotdag opnieuw na uit de database zelf en meldt het aantal afwijkingen (hoort 0 te zijn).
+
+Facturatie-dagen lopen van 00:00 tot 24:00 Nederlandse tijd, en de opslag telt de voorraad aan het **begin** van elke dag (zoals het oude systeem).

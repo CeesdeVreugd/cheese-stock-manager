@@ -37,6 +37,7 @@ export default async function DashboardPage() {
     { href: "/validaties", label: "Validatielijsten", sub: "Productafkomst, proces, model", mag: gebruiker.rol.canBeheer },
     { href: "/gebruikers", label: "Gebruikers", sub: "Aanmaken, rol en toegang", mag: gebruiker.rol.canBeheer },
     { href: "/rollen", label: "Rollen", sub: "Rechten per rol instellen", mag: gebruiker.rol.canBeheer },
+    { href: "/importeren", label: "Importeren", sub: "Eenmalig vanuit Excel", mag: gebruiker.rol.canBeheer },
     { href: "/activiteiten", label: "Activiteiten", sub: "Wie deed wanneer wat", mag: gebruiker.rol.canActiviteiten },
   ].filter((o) => o.mag);
 

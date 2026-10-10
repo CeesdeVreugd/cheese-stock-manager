@@ -1,36 +1,42 @@
 import { prisma } from "@/lib/prisma";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { amsterdamDelen, amsterdamMiddernacht } from "@/lib/tijd";
+import { berekenOpslag } from "@/lib/opslag";
 
 /**
  * Periode: donderdag t/m woensdag, gegenereerd op donderdagochtend (§8/§8.1
  * van het ontwerpdocument). `generatieDatum` is de donderdag waarop het
  * rapport "gedraaid" wordt; de periode is de 7 dagen daarvoor.
+ *
+ * Alle dagen lopen van 00:00 tot 24:00 NEDERLANDSE tijd, ongeacht de
+ * tijdzone van de server (Docker draait op UTC). `dagStarts` zijn de
+ * beginmomenten van de 7 dagen in de periode.
  */
 export function getPeriode(generatieDatum: Date) {
-  const eind = new Date(generatieDatum);
-  eind.setHours(0, 0, 0, 0);
-  eind.setMilliseconds(-1); // 23:59:59.999 op woensdag (de dag vóór generatieDatum)
+  const k = amsterdamDelen(generatieDatum);
+  const dagStarts = Array.from({ length: 7 }, (_, i) => amsterdamMiddernacht(k.jaar, k.maand, k.dag - 7 + i));
+  const start = dagStarts[0];
+  // 23:59:59.999 op woensdag (de dag vóór generatieDatum)
+  const eind = new Date(amsterdamMiddernacht(k.jaar, k.maand, k.dag).getTime() - 1);
 
-  const start = new Date(generatieDatum);
-  start.setHours(0, 0, 0, 0);
-  start.setTime(start.getTime() - 7 * DAY_MS); // donderdag, 7 dagen eerder
-
-  return { start, eind, generatieDatum };
+  return { start, eind, generatieDatum, dagStarts };
 }
 
-/** Meest recente donderdag (00:00) op of vóór `nu` — dat is de "huidige" facturatieweek. */
+/**
+ * Meest recente donderdag op of vóór `nu` — dat is de "huidige" facturatieweek.
+ * Geeft de donderdag terug als UTC-middernacht van die kalenderdatum (zoals
+ * `?week=YYYY-MM-DD` in de adresbalk ook wordt ingelezen).
+ */
 export function huidigeGeneratieDatum(nu: Date = new Date()) {
-  const dag = nu.getDay(); // zo=0 ... do=4
-  const daysSindsDonderdag = (dag - 4 + 7) % 7;
-  const donderdag = new Date(nu);
-  donderdag.setHours(0, 0, 0, 0);
-  donderdag.setTime(donderdag.getTime() - daysSindsDonderdag * DAY_MS);
-  return donderdag;
+  const k = amsterdamDelen(nu); // de kalenderdatum zoals die nu in Nederland is
+  const dagenSindsDonderdag = (k.weekdag - 4 + 7) % 7;
+  return new Date(Date.UTC(k.jaar, k.maand - 1, k.dag - dagenSindsDonderdag));
 }
 
 export function weekLabel(periode: { start: Date; eind: Date }) {
-  const iso = getIsoWeekNumber(periode.start);
+  // Het weeknummer volgt de ISO-week van de EINDDATUM (woensdag), net als in
+  // het oude rapport: periode 01-10 t/m 07-10-2026 heet "W41" (de donderdag
+  // erbij zou nog in week 40 vallen).
+  const iso = getIsoWeekNumber(periode.eind);
   const fmt = (d: Date) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", timeZone: "Europe/Amsterdam" });
   return {
     week: `Week ${iso.week} · ${iso.year}`,
@@ -39,11 +45,12 @@ export function weekLabel(periode: { start: Date; eind: Date }) {
 }
 
 function getIsoWeekNumber(date: Date) {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const k = amsterdamDelen(date);
+  const d = new Date(Date.UTC(k.jaar, k.maand - 1, k.dag));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / DAY_MS + 1) / 7);
+  const week = Math.ceil(((d.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000) + 1) / 7);
   return { week, year: d.getUTCFullYear() };
 }
 
@@ -63,59 +70,31 @@ export async function getUitslagRegels(start: Date, eind: Date, tarief: "standaa
 
 /**
  * Reconstrueert de opslag (kg-dagen) per partijcode/productafkomst/model over
- * de periode, uit InslagLog + UitslagLog — dit prototype heeft nog geen
- * dagelijkse snapshot-taak (§3.3/§8.1) draaien; deze berekening komt op
- * hetzelfde resultaat uit, alleen achteraf berekend i.p.v. dagelijks
- * vastgelegd. Voor productiegebruik blijft een dagelijkse snapshot-taak de
- * aanbevolen aanpak (goedkoper om te berekenen bij groeiende historie).
+ * de periode, uit InslagLog + UitslagLog. De rekenregel zelf staat in
+ * `lib/opslag.ts`: een box telt mee op een dag als hij bij het BEGIN van die
+ * dag (00:00) in opslag lag — gelijk aan de dagelijkse StartDag-snapshot van
+ * het oude Excel-systeem.
  */
-export async function getOpslagRegels(start: Date, eind: Date) {
-  const inslagLogs = await prisma.inslagLog.findMany({ where: { inslagtijd: { lte: eind } } });
+export async function getOpslagRegels(dagStarts: Date[], eind: Date) {
+  const inslagLogs = await prisma.inslagLog.findMany({
+    where: { inslagtijd: { lte: eind } },
+    select: { boxId: true, partijcode: true, productafkomst: true, model: true, nettoGram: true, inslagtijd: true },
+  });
   const boxIds = inslagLogs.map((l) => l.boxId);
   const uitslagLogs = boxIds.length
-    ? await prisma.uitslagLog.findMany({ where: { boxId: { in: boxIds } } })
+    ? await prisma.uitslagLog.findMany({
+        where: { boxId: { in: boxIds }, uitslagtijd: { lte: eind } },
+        select: { boxId: true, nettoGramUit: true, uitslagtijd: true },
+      })
     : [];
 
-  const uitslagPerBox = new Map<number, typeof uitslagLogs>();
-  for (const u of uitslagLogs) {
-    const lijst = uitslagPerBox.get(u.boxId) || [];
-    lijst.push(u);
-    uitslagPerBox.set(u.boxId, lijst);
-  }
-
-  type Totaal = { partijcode: string; productafkomst: string; model: string; kgDagen: number; dagen: Set<string> };
-  const totals = new Map<string, Totaal>();
-
-  for (let i = 0; i < 7; i++) {
-    const dagStart = new Date(start.getTime() + i * DAY_MS);
-    const dagEind = new Date(dagStart.getTime() + DAY_MS - 1);
-    if (dagEind > eind) break;
-
-    for (const box of inslagLogs) {
-      if (box.inslagtijd > dagEind) continue;
-      const uitgeslagenTotOpDag = (uitslagPerBox.get(box.boxId) || [])
-        .filter((u) => u.uitslagtijd <= dagEind)
-        .reduce((sum, u) => sum + u.nettoGramUit, 0);
-      const resterend = box.nettoGram - uitgeslagenTotOpDag;
-      if (resterend <= 0) continue;
-
-      const key = `${box.partijcode}|${box.productafkomst}|${box.model}`;
-      const entry = totals.get(key) || {
-        partijcode: box.partijcode,
-        productafkomst: box.productafkomst,
-        model: box.model,
-        kgDagen: 0,
-        dagen: new Set<string>(),
-      };
-      entry.kgDagen += resterend / 1000;
-      entry.dagen.add(dagStart.toDateString());
-      totals.set(key, entry);
-    }
-  }
-
-  return [...totals.values()]
-    .map((t) => ({ ...t, aantalDagen: t.dagen.size }))
-    .sort((a, b) => a.partijcode.localeCompare(b.partijcode));
+  return berekenOpslag(inslagLogs, uitslagLogs, dagStarts).map((r) => ({
+    partijcode: r.partijcode,
+    productafkomst: r.productafkomst,
+    model: r.model,
+    kgDagen: r.kgDagen,
+    aantalDagen: r.aantalDagen,
+  }));
 }
 
 export async function getFacturatieOverzicht(generatieDatum: Date) {
@@ -124,7 +103,7 @@ export async function getFacturatieOverzicht(generatieDatum: Date) {
     getInslagRegels(periode.start, periode.eind),
     getUitslagRegels(periode.start, periode.eind, "standaard"),
     getUitslagRegels(periode.start, periode.eind, "geetiketteerd"),
-    getOpslagRegels(periode.start, periode.eind),
+    getOpslagRegels(periode.dagStarts, periode.eind),
   ]);
 
   const sumGram = (arr: { nettoGram: number }[]) => arr.reduce((s, x) => s + x.nettoGram, 0);

@@ -66,6 +66,7 @@ export default function AppSidebar({
         { href: "/validaties", label: "Validatielijsten", mag: rol.canBeheer },
         { href: "/gebruikers", label: "Gebruikers", mag: rol.canBeheer },
         { href: "/rollen", label: "Rollen", mag: rol.canBeheer },
+        { href: "/importeren", label: "Importeren", mag: rol.canBeheer },
         { href: "/activiteiten", label: "Activiteiten", mag: rol.canActiviteiten },
       ],
     },

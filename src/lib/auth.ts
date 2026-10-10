@@ -1,4 +1,6 @@
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -164,11 +166,11 @@ export async function registreerLogin(gebruikerId: string) {
 // Kernfunctie: verstuurt willekeurige tekst-e-mail via dezelfde volgorde als
 // de inlogcodes — Microsoft Graph (Outlook/M365) als dat is ingesteld,
 // anders Resend, en zonder allebei verschijnt de tekst in de servertermina.
-async function verstuurEmail(email: string, onderwerp: string, tekst: string, devLabel: string, html?: string) {
+async function verstuurEmail(email: string, onderwerp: string, tekst: string, devLabel: string, html?: string, bijlagen?: import("@/lib/graph-mail").GraphBijlage[]) {
   const gebruiktGraph = process.env.MS_TENANT_ID && process.env.MS_CLIENT_ID && process.env.MS_CLIENT_SECRET;
   if (gebruiktGraph) {
     const { verstuurMailViaGraph } = await import("@/lib/graph-mail");
-    await verstuurMailViaGraph(email, onderwerp, tekst, html);
+    await verstuurMailViaGraph(email, onderwerp, tekst, html, bijlagen);
     return;
   }
 
@@ -188,21 +190,40 @@ async function verstuurEmail(email: string, onderwerp: string, tekst: string, de
   });
 }
 
-function logoUrlVoor(appUrl?: string) {
-  const basis = (process.env.APP_URL || appUrl || "").replace(/\/+$/, "");
-  return basis ? `${basis}/logo-emblem.png` : undefined;
+// Het logo gaat met Microsoft Graph als inline bijlage mee (cid:), dat toont
+// altijd. Voor andere verzendwegen valt het terug op een publieke link; die
+// komt uit APP_URL, anders het vaste adres van de app (de interne
+// serveradres van de container is van buiten niet bereikbaar).
+const OPENBARE_APP_URL = "https://csm-app.beekvreugdkaas.nl";
+
+function logoVoorMail(): { logoUrl: string; bijlagen?: import("@/lib/graph-mail").GraphBijlage[] } {
+  const gebruiktGraph = process.env.MS_TENANT_ID && process.env.MS_CLIENT_ID && process.env.MS_CLIENT_SECRET;
+  if (gebruiktGraph) {
+    try {
+      const bytes = fs.readFileSync(path.join(process.cwd(), "public", "logo-emblem.png"));
+      return {
+        logoUrl: "cid:csmlogo",
+        bijlagen: [{ naam: "logo.png", contentType: "image/png", base64: bytes.toString("base64"), contentId: "csmlogo" }],
+      };
+    } catch (err) {
+      console.error("Logo voor mail niet gevonden, link gebruikt:", err);
+    }
+  }
+  const basis = (process.env.APP_URL || OPENBARE_APP_URL).replace(/\/+$/, "");
+  return { logoUrl: `${basis}/logo-emblem.png` };
 }
 
-export async function sendLoginCode(email: string, code: string, naam?: string, appUrl?: string) {
+export async function sendLoginCode(email: string, code: string, naam?: string, _appUrl?: string) {
+  const logo = logoVoorMail();
   const onderwerp = "Je inlogcode voor Cheese Stock Manager";
   const inhoud: MailInhoud = {
     aanhef: naam ? `Hallo ${naam},` : "Hallo,",
     regelsVoor: ["Je inlogcode voor Cheese Stock Manager is:"],
     code,
     regelsNa: ["De code is 10 minuten geldig. Heb je niet geprobeerd in te loggen? Dan kun je deze mail negeren."],
-    logoUrl: logoUrlVoor(appUrl),
+    logoUrl: logo.logoUrl,
   };
-  await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Inlogcode", bouwMailHtml(inhoud));
+  await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Inlogcode", bouwMailHtml(inhoud), logo.bijlagen);
 }
 
 // Uitnodigingsmail voor een nieuw aangemaakte gebruiker. De link wijst naar
@@ -210,6 +231,7 @@ export async function sendLoginCode(email: string, code: string, naam?: string, 
 // eerste succesvolle e-mail+code-login wordt automatisch om een pincode
 // gevraagd (§4.2/§4.3). Er is dus bewust geen apart activatie-token nodig.
 export async function sendUitnodiging(email: string, naam: string, appUrl: string) {
+  const logo = logoVoorMail();
   const onderwerp = "Uitnodiging voor Cheese Stock Manager";
   const inhoud: MailInhoud = {
     aanhef: `Hallo ${naam},`,
@@ -218,7 +240,7 @@ export async function sendUitnodiging(email: string, naam: string, appUrl: strin
       `Klik op de knop om je account te activeren en log in met dit e-mailadres (${email}). Je ontvangt dan een eenmalige inlogcode en wordt daarna gevraagd een pincode aan te maken voor snelle toegang op dit toestel.`,
     ],
     knop: { tekst: "Naar Cheese Stock Manager", url: appUrl },
-    logoUrl: logoUrlVoor(appUrl),
+    logoUrl: logo.logoUrl,
   };
-  await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Uitnodiging", bouwMailHtml(inhoud));
+  await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Uitnodiging", bouwMailHtml(inhoud), logo.bijlagen);
 }

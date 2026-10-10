@@ -42,7 +42,9 @@ async function haalGraphToken(): Promise<string> {
   return gecachedToken.token;
 }
 
-export async function verstuurMailViaGraph(naar: string, onderwerp: string, tekst: string, html?: string) {
+export type GraphBijlage = { naam: string; contentType: string; base64: string; contentId: string };
+
+export async function verstuurMailViaGraph(naar: string, onderwerp: string, tekst: string, html?: string, bijlagen?: GraphBijlage[]) {
   const afzender = process.env.MS_SENDER_EMAIL;
   if (!afzender) {
     throw new Error("MS_SENDER_EMAIL ontbreekt — dit moet het mailadres zijn waarvandaan verstuurd wordt");
@@ -61,6 +63,20 @@ export async function verstuurMailViaGraph(naar: string, onderwerp: string, teks
         subject: onderwerp,
         body: html ? { contentType: "HTML", content: html } : { contentType: "Text", content: tekst },
         toRecipients: [{ emailAddress: { address: naar } }],
+        // Inline afbeeldingen (het logo) gaan als bijlage mee, zodat ze ook
+        // zonder "afbeeldingen downloaden" of bereikbare server zichtbaar zijn.
+        ...(bijlagen?.length
+          ? {
+              attachments: bijlagen.map((b) => ({
+                "@odata.type": "#microsoft.graph.fileAttachment",
+                name: b.naam,
+                contentType: b.contentType,
+                contentBytes: b.base64,
+                isInline: true,
+                contentId: b.contentId,
+              })),
+            }
+          : {}),
         // Zonder dit expliciete "from" stuurt Graph als het hoofdadres van
         // de mailbox, ook als MS_SENDER_EMAIL een alias is (bv.
         // cheesstockmanager@... als alias op info@...). Met deze regel

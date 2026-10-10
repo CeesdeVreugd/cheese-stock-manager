@@ -61,7 +61,7 @@ export default async function GebruikersPage() {
         </div>
 
         {/* ---------- Desktop ---------- */}
-        <div className="hidden md:block md:px-10 md:py-10 md:max-w-6xl">
+        <div className="hidden md:block md:px-10 md:py-10 md:max-w-7xl">
           <h1 className="font-serif text-3xl font-semibold text-green mb-6">Gebruikers</h1>
           <GebruikersLijst initieel={gebruikers} rollen={rollen} huidigId={gebruiker.id} />
         </div>

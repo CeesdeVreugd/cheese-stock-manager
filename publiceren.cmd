@@ -15,7 +15,7 @@ REM Dit script kopieert alles wat naast het script staat.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Pushmeldingen: VAPID-sleutel runtime, instelbare inlogduur onder Beheer, pincode blijft bewaard na opnieuw inloggen."
+set "OMSCHRIJVING=Mooiere inlogmail (code in vak, logo als bijlage) en overzichtelijkere gebruikerslijst."
 
 REM ---- Veiligheidscontrole: staat dit script echt in de uitgepakte app-map? ----
 REM Zonder deze controle zou een zip die per ongeluk in bijvoorbeeld Downloads

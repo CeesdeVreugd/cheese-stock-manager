@@ -26,8 +26,13 @@ export function bouwMailHtml(m: MailInhoud): string {
   const alinea = (t: string) =>
     `<p style="margin:0 0 14px 0;font-size:14px;line-height:1.55;color:${INKT};">${esc(t)}</p>`;
 
+  // Code in een eigen vakje, met gewone (lining) cijfers: Georgia toont cijfers
+  // met "oude stijl" (9 en 0 zakken onder de regel) en dat oogt rommelig.
   const codeBlok = m.code
-    ? `<p style="margin:6px 0 18px 0;font-family:Georgia,'Times New Roman',serif;font-size:34px;font-weight:bold;letter-spacing:8px;color:${GROEN};">${esc(m.code)}</p>`
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 22px 0;"><tr>
+         <td style="background:${ROOM};border:2px solid ${GOUD};border-radius:12px;padding:14px 26px;">
+           <span style="font-family:Arial,Helvetica,sans-serif;font-size:34px;line-height:38px;font-weight:bold;letter-spacing:10px;color:${GROEN};">${esc(m.code)}</span>
+         </td></tr></table>`
     : "";
 
   const knopBlok = m.knop
@@ -37,7 +42,7 @@ export function bouwMailHtml(m: MailInhoud): string {
     : "";
 
   const logo = m.logoUrl
-    ? `<img src="${esc(m.logoUrl)}" alt="Van Beek &amp; De Vreugd Kaas" width="86" style="display:block;border:0;height:auto;margin:0 0 10px 0;">`
+    ? `<img src="${esc(m.logoUrl)}" alt="Van Beek &amp; De Vreugd Kaas" width="96" style="display:block;border:0;height:auto;margin:0 0 12px 0;">`
     : "";
 
   return `<!DOCTYPE html>

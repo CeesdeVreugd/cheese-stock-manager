@@ -55,6 +55,7 @@ export default function GebruikersLijst({
   const [email, setEmail] = useState("");
   const [rolId, setRolId] = useState(rollen[0]?.id ?? "");
   const [stuurUitnodiging, setStuurUitnodiging] = useState(true);
+  const [toonFormulier, setToonFormulier] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [teVerwijderen, setTeVerwijderen] = useState<Gebruiker | null>(null);
@@ -227,10 +228,20 @@ export default function GebruikersLijst({
   }
 
   return (
-    <div className="flex flex-col gap-5 md:flex-row md:items-start md:gap-8">
+    <div className="flex flex-col gap-5">
+      <div>
+        <button
+          type="button"
+          onClick={() => setToonFormulier((v) => !v)}
+          className="rounded-xl border-[1.5px] border-gold bg-white px-4 py-2 text-sm font-bold text-goldDeep"
+        >
+          {toonFormulier ? "Sluiten" : "+ Nieuwe gebruiker"}
+        </button>
+      </div>
+
       <form
         onSubmit={toevoegen}
-        className="flex flex-col gap-3 rounded-2xl border-[1.5px] border-line bg-white p-4 md:w-72 md:flex-shrink-0"
+        className={`${toonFormulier ? "flex" : "hidden"} flex-col gap-3 rounded-2xl border-[1.5px] border-line bg-white p-4 md:max-w-md`}
       >
         <p className="text-xs font-bold text-ink">Nieuwe gebruiker aanmaken</p>
         <input required value={naam} onChange={(e) => setNaam(e.target.value)} placeholder="Naam" className="input" />
@@ -356,87 +367,92 @@ export default function GebruikersLijst({
           ))}
         </div>
 
-        {/* Desktop: echte tabel */}
-        <div className="overflow-x-auto">
-        <table className="hidden md:table w-full text-sm border-collapse min-w-[1000px]">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-inkSoft border-b border-line">
-              <th className="py-2 pr-3 font-semibold">Naam</th>
-              <th className="py-2 pr-3 font-semibold">E-mail</th>
-              <th className="py-2 pr-3 font-semibold">Rol</th>
-              <th className="py-2 pr-3 font-semibold">Status</th>
-              <th className="py-2 pr-3 font-semibold">Meldingen</th>
-              <th className="py-2 pr-3 font-semibold">App</th>
-              <th className="py-2 pr-3 font-semibold">Laatst ingelogd</th>
-              <th className="py-2 font-semibold"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {lijst.map((g) => (
-              <tr key={g.id} className="border-b border-line last:border-0">
-                <td className="py-3 pr-3 font-medium">
-                  {g.naam} {g.id === huidigId && <span className="text-inkSoft font-normal">(jij)</span>}
-                </td>
-                <td className="py-3 pr-3 text-inkSoft">{g.email}</td>
-                <td className="py-3 pr-3">
-                  {g.id === huidigId ? (
-                    <span>{g.rol?.naam ?? "Geen rol"}</span>
-                  ) : (
-                    <select
-                      value={g.rol?.id ?? ""}
-                      onChange={(e) => wisselRol(g, e.target.value)}
-                      disabled={busy}
-                      className="rounded-lg border-[1.5px] border-line px-2 py-1 text-xs"
-                    >
-                      {rollen.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.naam}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </td>
-                <td className="py-3 pr-3">
-                  <button
-                    onClick={() => wisselStatus(g)}
-                    disabled={busy || g.id === huidigId}
-                    className={`text-xs font-semibold rounded-full px-3 py-1.5 ${
-                      g.status === "actief" ? "bg-greenSoft text-green" : "bg-red-100 text-red-700"
-                    } disabled:opacity-40`}
-                  >
-                    {g.status === "actief" ? "Actief" : "Geblokkeerd"}
-                  </button>
-                </td>
-                <td className="py-3 pr-3">
-                  <Badge aan={(g.meldingenToestellen ?? 0) > 0} aanTekst={`Aan (${g.meldingenToestellen})`} uitTekst="Uit" />
-                </td>
-                <td className="py-3 pr-3">
-                  <Badge aan={!!g.geactiveerdOp} aanTekst="Geactiveerd" uitTekst="Nog niet" />
-                  {g.geactiveerdOp && <div className="text-[11px] text-inkSoft mt-0.5">sinds {fmtDatumAlleen(g.geactiveerdOp)}</div>}
-                </td>
-                <td className="py-3 pr-3 text-xs text-inkSoft whitespace-nowrap">{fmtMoment(g.laatsteLogin) ?? "nog nooit"}</td>
-                <td className="py-3 text-right">
-                  <div className="flex gap-2 justify-end">
-                    <button onClick={() => startBewerken(g)} disabled={busy} className="text-xs text-ink underline">
-                      Bewerken
-                    </button>
-                    <button onClick={() => uitnodigen(g)} disabled={busy} className="text-xs text-green underline">
-                      Uitnodigen
-                    </button>
-                    <button onClick={() => resetPincode(g)} disabled={busy} className="text-xs text-goldDeep underline">
-                      Pincode resetten
-                    </button>
-                    {g.id !== huidigId && (
-                      <button onClick={() => setTeVerwijderen(g)} className="text-xs text-red-600 underline">
-                        Verwijderen
-                      </button>
-                    )}
-                  </div>
-                </td>
+        {/* Desktop: overzichtelijke tabel, volledige breedte, naam en e-mail samen */}
+        <div className="hidden md:block rounded-2xl border-[1.5px] border-line bg-white overflow-hidden">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-[11px] uppercase tracking-wide text-inkSoft bg-greenSoft">
+                <th className="py-2.5 px-4 font-semibold">Gebruiker</th>
+                <th className="py-2.5 px-3 font-semibold">Rol</th>
+                <th className="py-2.5 px-3 font-semibold">Status</th>
+                <th className="py-2.5 px-3 font-semibold">Meldingen</th>
+                <th className="py-2.5 px-3 font-semibold">App</th>
+                <th className="py-2.5 px-3 font-semibold">Laatst ingelogd</th>
+                <th className="py-2.5 px-4 font-semibold text-right">Acties</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {lijst.map((g) => (
+                <tr key={g.id} className="border-t border-line align-middle">
+                  <td className="py-3 px-4">
+                    <div className="font-semibold text-ink">
+                      {g.naam} {g.id === huidigId && <span className="text-inkSoft font-normal">(jij)</span>}
+                    </div>
+                    <div className="text-xs text-inkSoft break-all">{g.email}</div>
+                  </td>
+                  <td className="py-3 px-3">
+                    {g.id === huidigId ? (
+                      <span>{g.rol?.naam ?? "Geen rol"}</span>
+                    ) : (
+                      <select
+                        value={g.rol?.id ?? ""}
+                        onChange={(e) => wisselRol(g, e.target.value)}
+                        disabled={busy}
+                        className="rounded-lg border-[1.5px] border-line px-2 py-1 text-xs"
+                      >
+                        {rollen.map((r) => (
+                          <option key={r.id} value={r.id}>
+                            {r.naam}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
+                  <td className="py-3 px-3">
+                    <button
+                      onClick={() => wisselStatus(g)}
+                      disabled={busy || g.id === huidigId}
+                      className={`text-xs font-semibold rounded-full px-3 py-1.5 ${
+                        g.status === "actief" ? "bg-greenSoft text-green" : "bg-red-100 text-red-700"
+                      } disabled:opacity-40`}
+                    >
+                      {g.status === "actief" ? "Actief" : "Geblokkeerd"}
+                    </button>
+                  </td>
+                  <td className="py-3 px-3">
+                    <Badge aan={(g.meldingenToestellen ?? 0) > 0} aanTekst={`Aan (${g.meldingenToestellen})`} uitTekst="Uit" />
+                  </td>
+                  <td className="py-3 px-3">
+                    <Badge aan={!!g.geactiveerdOp} aanTekst="Geactiveerd" uitTekst="Nog niet" />
+                    {g.geactiveerdOp && (
+                      <div className="text-[11px] text-inkSoft mt-1 whitespace-nowrap">sinds {fmtDatumAlleen(g.geactiveerdOp)}</div>
+                    )}
+                  </td>
+                  <td className="py-3 px-3 text-xs text-inkSoft">
+                    {fmtMoment(g.laatsteLogin) ?? "nog nooit"}
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex flex-col items-end gap-1 text-xs">
+                      <button onClick={() => startBewerken(g)} disabled={busy} className="text-ink underline">
+                        Bewerken
+                      </button>
+                      <button onClick={() => uitnodigen(g)} disabled={busy} className="text-green underline">
+                        Uitnodigen
+                      </button>
+                      <button onClick={() => resetPincode(g)} disabled={busy} className="text-goldDeep underline">
+                        Pincode resetten
+                      </button>
+                      {g.id !== huidigId && (
+                        <button onClick={() => setTeVerwijderen(g)} className="text-red-600 underline">
+                          Verwijderen
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 

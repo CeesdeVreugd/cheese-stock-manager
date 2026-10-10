@@ -3,7 +3,7 @@ import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import OntgrendelGate from "@/components/ontgrendel-gate";
 import GeenToegang from "@/components/geen-toegang";
-import { fmtDatum, fmtDatumTijd } from "@/lib/format";
+import { fmtDatum, fmtDatumTijd, fmtGetal } from "@/lib/format";
 
 export default async function UitslagOverzichtPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
@@ -39,7 +39,7 @@ export default async function UitslagOverzichtPage() {
                         Afroep
                       </span>
                     )}
-                    <span className="text-xs font-semibold">{(r.nettoGramUit / 1000).toFixed(1)} kg</span>
+                    <span className="text-xs font-semibold">{fmtGetal(r.nettoGramUit / 1000, 1)} kg</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-y-1 text-xs">
@@ -107,7 +107,7 @@ export default async function UitslagOverzichtPage() {
                     <td className="py-2.5 px-4 capitalize">{r.uitslagType}</td>
                     <td className="py-2.5 px-4">{r.tarief === "geetiketteerd" ? "Geëtiketteerd" : "Standaard"}</td>
                     <td className="py-2.5 px-4 text-right">{r.aantalKazenUit}</td>
-                    <td className="py-2.5 px-4 text-right font-semibold">{(r.nettoGramUit / 1000).toFixed(1)} kg</td>
+                    <td className="py-2.5 px-4 text-right font-semibold">{fmtGetal(r.nettoGramUit / 1000, 1)} kg</td>
                   </tr>
                 ))}
               </tbody>

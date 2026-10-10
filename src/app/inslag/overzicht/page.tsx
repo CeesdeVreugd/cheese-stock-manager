@@ -3,7 +3,7 @@ import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import OntgrendelGate from "@/components/ontgrendel-gate";
 import GeenToegang from "@/components/geen-toegang";
-import { fmtDatum, fmtDatumTijd } from "@/lib/format";
+import { fmtDatum, fmtDatumTijd, fmtGetal } from "@/lib/format";
 
 export default async function InslagOverzichtPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
@@ -32,7 +32,7 @@ export default async function InslagOverzichtPage() {
               <div key={r.id} className="rounded-2xl border-[1.5px] border-line bg-white p-3.5">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-serif font-semibold text-green">Box #{r.boxId}</span>
-                  <span className="text-xs font-semibold">{(r.nettoGram / 1000).toFixed(1)} kg</span>
+                  <span className="text-xs font-semibold">{fmtGetal(r.nettoGram / 1000, 1)} kg</span>
                 </div>
                 <div className="grid grid-cols-2 gap-y-1 text-xs">
                   <div className="text-inkSoft">PRODUCTAFKOMST</div>
@@ -89,7 +89,7 @@ export default async function InslagOverzichtPage() {
                     <td className="py-2.5 px-4">{fmtDatumTijd(r.inslagtijd)}</td>
                     <td className="py-2.5 px-4">{fmtDatum(r.productiedatum)}</td>
                     <td className="py-2.5 px-4 text-right">{r.aantalKazen}</td>
-                    <td className="py-2.5 px-4 text-right font-semibold">{(r.nettoGram / 1000).toFixed(1)} kg</td>
+                    <td className="py-2.5 px-4 text-right font-semibold">{fmtGetal(r.nettoGram / 1000, 1)} kg</td>
                   </tr>
                 ))}
               </tbody>

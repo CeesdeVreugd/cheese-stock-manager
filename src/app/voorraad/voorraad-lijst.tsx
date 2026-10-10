@@ -1,5 +1,6 @@
 "use client";
 
+import { fmtGetal } from "@/lib/format";
 import { useMemo, useState } from "react";
 import QrScanner from "@/components/qr-scanner";
 
@@ -157,7 +158,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
       {(filtersActief || zoek) && gefilterd.length > 0 && (
         <div className="rounded-xl bg-greenSoft px-3.5 py-2.5 mb-4 text-sm text-green">
           <span className="font-bold">{totalen.aantalKazen} kazen</span> in {gefilterd.length} box{gefilterd.length === 1 ? "" : "en"} ·{" "}
-          {(totalen.nettoGram / 1000).toFixed(1)} kg totaal
+          {fmtGetal(totalen.nettoGram / 1000, 1)} kg totaal
         </div>
       )}
 
@@ -189,7 +190,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
                         {beschikbaar} beschikbaar
                       </span>
                     )}
-                    <span className="text-xs font-semibold">{(box.nettoGram / 1000).toFixed(1)} kg</span>
+                    <span className="text-xs font-semibold">{fmtGetal(box.nettoGram / 1000, 1)} kg</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-y-1 text-xs">
@@ -257,7 +258,7 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
                   <td className="py-2.5 px-4">{fmtDatum(box.productiedatum)}</td>
                   <td className={`py-2.5 px-4 text-right ${weken > 8 ? "font-semibold text-goldDeep" : ""}`}>{weken} weken</td>
                   <td className="py-2.5 px-4 text-right">{box.aantalKazen} stuks</td>
-                  <td className="py-2.5 px-4 text-right font-semibold">{(box.nettoGram / 1000).toFixed(1)} kg</td>
+                  <td className="py-2.5 px-4 text-right font-semibold">{fmtGetal(box.nettoGram / 1000, 1)} kg</td>
                 </tr>
               );
             })}

@@ -1,5 +1,6 @@
 "use client";
 
+import { fmtGetal } from "@/lib/format";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -132,7 +133,7 @@ export default function UitslagForm({
                 <div className="text-inkSoft mt-1">AANWEZIG</div>
                 <div className="font-medium">{box.partijcode}</div>
                 <div className="font-medium">
-                  {box.aantalKazen} stuks · {(box.nettoGram / 1000).toFixed(1)} kg
+                  {box.aantalKazen} stuks · {fmtGetal(box.nettoGram / 1000, 1)} kg
                 </div>
               </div>
             </div>

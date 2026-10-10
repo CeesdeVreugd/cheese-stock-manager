@@ -3,6 +3,7 @@ import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/facturatie";
 import OntgrendelGate from "@/components/ontgrendel-gate";
 import GeenToegang from "@/components/geen-toegang";
+import { fmtGetal } from "@/lib/format";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -24,16 +25,16 @@ export default async function FacturatiePage({
   const isHuidigeWeek = generatieDatum.getTime() === huidigeGeneratieDatum().getTime();
 
   const tegels = [
-    { label: "Inslag", waarde: `${overzicht.totalen.inslagKg.toFixed(1)} kg`, sub: `${overzicht.inslag.length} boxen` },
-    { label: "Opslag", waarde: overzicht.totalen.opslagKgDagen.toFixed(1), sub: `kg-dagen · ${overzicht.opslag.length} partijen` },
+    { label: "Inslag", waarde: `${fmtGetal(overzicht.totalen.inslagKg, 1)} kg`, sub: `${overzicht.inslag.length} boxen` },
+    { label: "Opslag", waarde: fmtGetal(overzicht.totalen.opslagKgDagen, 1), sub: `kg-dagen · ${overzicht.opslag.length} partijen` },
     {
       label: "Uitslag standaard",
-      waarde: `${overzicht.totalen.uitslagStandaardKg.toFixed(1)} kg`,
+      waarde: `${fmtGetal(overzicht.totalen.uitslagStandaardKg, 1)} kg`,
       sub: `${overzicht.uitslagStandaard.length} uitslagen`,
     },
     {
       label: "Uitslag geëtiketteerd",
-      waarde: `${overzicht.totalen.uitslagGeetiketteerdKg.toFixed(1)} kg`,
+      waarde: `${fmtGetal(overzicht.totalen.uitslagGeetiketteerdKg, 1)} kg`,
       sub: `${overzicht.uitslagGeetiketteerd.length} uitslagen`,
     },
   ];

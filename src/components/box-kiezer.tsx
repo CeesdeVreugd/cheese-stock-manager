@@ -1,5 +1,6 @@
 "use client";
 
+import { fmtGetal } from "@/lib/format";
 import { useMemo, useState } from "react";
 import QrScanner from "./qr-scanner";
 
@@ -98,7 +99,7 @@ export default function BoxKiezer({
                       {beschikbaar} beschikbaar
                     </span>
                   )}
-                  <span className="text-xs font-semibold">{(box.nettoGram / 1000).toFixed(1)} kg</span>
+                  <span className="text-xs font-semibold">{fmtGetal(box.nettoGram / 1000, 1)} kg</span>
                 </div>
               </div>
               <div className="text-xs text-inkSoft">

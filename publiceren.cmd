@@ -15,7 +15,7 @@ REM Dit script kopieert alles wat naast het script staat.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Duidelijkere totalen op het hoofdscherm (Nederlandse notatie)."
+set "OMSCHRIJVING=Nederlandse getalnotatie overal en totalenkop bij Voorraad."
 
 REM ---- Veiligheidscontrole: staat dit script echt in de uitgepakte app-map? ----
 REM Zonder deze controle zou een zip die per ongeluk in bijvoorbeeld Downloads

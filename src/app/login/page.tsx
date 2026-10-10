@@ -95,7 +95,7 @@ export default function LoginPage() {
           >
             {busy ? "Versturen…" : "Stuur inlogcode"}
           </button>
-          <div className="flex gap-2.5 rounded-xl bg-greenSoft p-3.5">
+          <div className="flex md:hidden gap-2.5 rounded-xl bg-greenSoft p-3.5">
             <p className="text-xs leading-relaxed text-green">
               Geen wachtwoord nodig. Draai je dit lokaal zonder e-mailservice? Dan verschijnt de
               code in de servertermina.

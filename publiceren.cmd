@@ -15,7 +15,7 @@ REM Dit script kopieert alles wat naast het script staat.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Facturatie-PDF over meerdere pagina-s zonder afkapping, kop en bestandsnaam zoals het oude rapport, gegenereerd-op is het echte moment."
+set "OMSCHRIJVING=Facturatie-PDF: kleur geel zoals het oude rapport en alle kolommen passen op de pagina."
 
 REM ---- Veiligheidscontrole: staat dit script echt in de uitgepakte app-map? ----
 REM Zonder deze controle zou een zip die per ongeluk in bijvoorbeeld Downloads

@@ -6,7 +6,8 @@ import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/facturatie";
 import { fmtDatum as fmtDate, fmtDatumTijd as fmtDateTime } from "@/lib/format";
 
-const GOLD = rgb(0.89, 0.65, 0.16);
+// Zuiver geel (255,215,0), net als de balken in het oude Excel-rapport
+const GOLD = rgb(1, 0.843, 0);
 const GREEN = rgb(0.13, 0.23, 0.17);
 const INK = rgb(0.17, 0.15, 0.13);
 const LINE = rgb(0.85, 0.82, 0.75);
@@ -116,7 +117,7 @@ export async function GET(req: NextRequest) {
   // Pagina 1: Inslag
   {
     const headers = ["Partijcode", "Productafkomst", "Proces", "Model", "BoxID", "InslagDatum", "Productiedatum", "AantalKazen", "NettoKgBox"];
-    const widths = [90, 110, 100, 60, 50, 100, 100, 80, 90];
+    const widths = [85, 105, 95, 55, 50, 95, 95, 75, 100]; // totaal 755 — past op de pagina (761)
     const rows = overzicht.inslag.map((r) => [
       r.partijcode,
       r.productafkomst,
@@ -147,7 +148,7 @@ export async function GET(req: NextRequest) {
     ["Facturatie overzicht - uitslag (Geëtiketteerd) boerenkazen", overzicht.uitslagGeetiketteerd, overzicht.totalen.uitslagGeetiketteerdKg],
   ] as const) {
     const headers = ["Partijcode", "Productafkomst", "Proces", "Model", "Box ID", "UitslagDatum", "Productiedatum", "Uitslag type", "Aantal kazen uit", "NettoKg Uitslag"];
-    const widths = [80, 100, 90, 55, 55, 100, 95, 75, 90, 90];
+    const widths = [70, 90, 85, 50, 45, 95, 95, 70, 80, 80]; // totaal 760 — past op de pagina (761)
     const rows = regels.map((r) => [
       r.partijcode,
       r.productafkomst,

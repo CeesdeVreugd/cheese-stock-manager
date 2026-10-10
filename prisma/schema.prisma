@@ -58,6 +58,9 @@ model Gebruiker {
   rolId     String?
   status    GebruikerStatus @default(actief)
   createdAt DateTime        @default(now())
+  // Laatste keer inloggen (met e-mailcode of pincode). Optioneel: leeg voor
+  // wie sinds deze toevoeging nog niet is ingelogd.
+  laatsteLogin DateTime?
 
   loginCodes     LoginCode[]
   devicePincodes DevicePincode[]

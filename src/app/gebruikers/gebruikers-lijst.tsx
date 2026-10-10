@@ -9,7 +9,37 @@ type Gebruiker = {
   email: string;
   rol: Rol | null;
   status: "actief" | "geblokkeerd";
+  // Alleen gevuld in de lijst zoals de pagina die laadt; nieuw aangemaakte of
+  // net aangepaste gebruikers krijgen deze waarden uit de bestaande rij.
+  meldingenToestellen?: number;
+  geactiveerdOp?: string | null;
+  laatsteLogin?: string | null;
 };
+
+const TIJDZONE = "Europe/Amsterdam";
+function fmtMoment(iso?: string | null) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  const datum = d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: TIJDZONE });
+  const tijd = d.toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit", timeZone: TIJDZONE });
+  return `${datum} ${tijd}`;
+}
+function fmtDatumAlleen(iso?: string | null) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: TIJDZONE });
+}
+
+function Badge({ aan, aanTekst, uitTekst }: { aan: boolean; aanTekst: string; uitTekst: string }) {
+  return (
+    <span
+      className={`inline-block text-[11px] font-semibold rounded-full px-2.5 py-1 ${
+        aan ? "bg-greenSoft text-green" : "bg-cream text-inkSoft border border-line"
+      }`}
+    >
+      {aan ? aanTekst : uitTekst}
+    </span>
+  );
+}
 
 export default function GebruikersLijst({
   initieel,
@@ -57,7 +87,7 @@ export default function GebruikersLijst({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Opslaan mislukt");
-      setLijst((l) => l.map((x) => (x.id === teBewerken.id ? data.gebruiker : x)).sort((a, b) => a.naam.localeCompare(b.naam)));
+      setLijst((l) => l.map((x) => (x.id === teBewerken.id ? { ...x, ...data.gebruiker } : x)).sort((a, b) => a.naam.localeCompare(b.naam)));
       setTeBewerken(null);
     } catch (err: any) {
       setBewerkFout(err.message);
@@ -79,7 +109,7 @@ export default function GebruikersLijst({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Aanmaken mislukt");
-      setLijst((l) => [...l, data.gebruiker].sort((a, b) => a.naam.localeCompare(b.naam)));
+      setLijst((l) => [...l, { meldingenToestellen: 0, geactiveerdOp: null, laatsteLogin: null, ...data.gebruiker }].sort((a, b) => a.naam.localeCompare(b.naam)));
       if (stuurUitnodiging) {
         setUitnodigingStatus(
           data.uitnodigingVerstuurd
@@ -108,7 +138,7 @@ export default function GebruikersLijst({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Bijwerken mislukt");
-      setLijst((l) => l.map((x) => (x.id === g.id ? data.gebruiker : x)));
+      setLijst((l) => l.map((x) => (x.id === g.id ? { ...x, ...data.gebruiker } : x)));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -127,7 +157,7 @@ export default function GebruikersLijst({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Bijwerken mislukt");
-      setLijst((l) => l.map((x) => (x.id === g.id ? data.gebruiker : x)));
+      setLijst((l) => l.map((x) => (x.id === g.id ? { ...x, ...data.gebruiker } : x)));
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -297,6 +327,13 @@ export default function GebruikersLijst({
                   )}
                 </div>
               </div>
+              <div className="flex flex-wrap items-center gap-1.5 mb-2">
+                <Badge aan={(g.meldingenToestellen ?? 0) > 0} aanTekst={`Meldingen aan (${g.meldingenToestellen})`} uitTekst="Meldingen uit" />
+                <Badge aan={!!g.geactiveerdOp} aanTekst="App geactiveerd" uitTekst="Niet geactiveerd" />
+                <span className="text-[11px] text-inkSoft">
+                  Laatst ingelogd: {fmtMoment(g.laatsteLogin) ?? "nog nooit"}
+                </span>
+              </div>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
                   <button onClick={() => startBewerken(g)} disabled={busy} className="text-xs text-ink underline flex-shrink-0">
@@ -321,13 +358,16 @@ export default function GebruikersLijst({
 
         {/* Desktop: echte tabel */}
         <div className="overflow-x-auto">
-        <table className="hidden md:table w-full text-sm border-collapse min-w-[700px]">
+        <table className="hidden md:table w-full text-sm border-collapse min-w-[1000px]">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-inkSoft border-b border-line">
               <th className="py-2 pr-3 font-semibold">Naam</th>
               <th className="py-2 pr-3 font-semibold">E-mail</th>
               <th className="py-2 pr-3 font-semibold">Rol</th>
               <th className="py-2 pr-3 font-semibold">Status</th>
+              <th className="py-2 pr-3 font-semibold">Meldingen</th>
+              <th className="py-2 pr-3 font-semibold">App</th>
+              <th className="py-2 pr-3 font-semibold">Laatst ingelogd</th>
               <th className="py-2 font-semibold"></th>
             </tr>
           </thead>
@@ -367,6 +407,14 @@ export default function GebruikersLijst({
                     {g.status === "actief" ? "Actief" : "Geblokkeerd"}
                   </button>
                 </td>
+                <td className="py-3 pr-3">
+                  <Badge aan={(g.meldingenToestellen ?? 0) > 0} aanTekst={`Aan (${g.meldingenToestellen})`} uitTekst="Uit" />
+                </td>
+                <td className="py-3 pr-3">
+                  <Badge aan={!!g.geactiveerdOp} aanTekst="Geactiveerd" uitTekst="Nog niet" />
+                  {g.geactiveerdOp && <div className="text-[11px] text-inkSoft mt-0.5">sinds {fmtDatumAlleen(g.geactiveerdOp)}</div>}
+                </td>
+                <td className="py-3 pr-3 text-xs text-inkSoft whitespace-nowrap">{fmtMoment(g.laatsteLogin) ?? "nog nooit"}</td>
                 <td className="py-3 text-right">
                   <div className="flex gap-2 justify-end">
                     <button onClick={() => startBewerken(g)} disabled={busy} className="text-xs text-ink underline">

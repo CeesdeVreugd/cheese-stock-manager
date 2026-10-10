@@ -2,6 +2,7 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { bouwMailHtml, bouwMailTekst, type MailInhoud } from "@/lib/mail-template";
 
 const SESSION_COOKIE = "csm_session";
 const UNLOCK_COOKIE = "csm_unlocked";
@@ -145,16 +146,26 @@ export async function vereisOntgrendeldeGebruikerApi() {
   return { ...gebruiker, rol: gebruiker.rol };
 }
 
+// Legt vast wanneer iemand voor het laatst inlogde (met code of pincode).
+// Een fout hierbij mag het inloggen zelf nooit blokkeren.
+export async function registreerLogin(gebruikerId: string) {
+  try {
+    await prisma.gebruiker.update({ where: { id: gebruikerId }, data: { laatsteLogin: new Date() } });
+  } catch (err) {
+    console.error("Kon laatste login niet vastleggen:", err);
+  }
+}
+
 // ---------- E-mail versturen ----------
 
 // Kernfunctie: verstuurt willekeurige tekst-e-mail via dezelfde volgorde als
 // de inlogcodes — Microsoft Graph (Outlook/M365) als dat is ingesteld,
 // anders Resend, en zonder allebei verschijnt de tekst in de servertermina.
-async function verstuurEmail(email: string, onderwerp: string, tekst: string, devLabel: string) {
+async function verstuurEmail(email: string, onderwerp: string, tekst: string, devLabel: string, html?: string) {
   const gebruiktGraph = process.env.MS_TENANT_ID && process.env.MS_CLIENT_ID && process.env.MS_CLIENT_SECRET;
   if (gebruiktGraph) {
     const { verstuurMailViaGraph } = await import("@/lib/graph-mail");
-    await verstuurMailViaGraph(email, onderwerp, tekst);
+    await verstuurMailViaGraph(email, onderwerp, tekst, html);
     return;
   }
 
@@ -170,14 +181,25 @@ async function verstuurEmail(email: string, onderwerp: string, tekst: string, de
     to: email,
     subject: onderwerp,
     text: tekst,
+    ...(html ? { html } : {}),
   });
 }
 
-export async function sendLoginCode(email: string, code: string, naam?: string) {
+function logoUrlVoor(appUrl?: string) {
+  const basis = (process.env.APP_URL || appUrl || "").replace(/\/+$/, "");
+  return basis ? `${basis}/logo-emblem.png` : undefined;
+}
+
+export async function sendLoginCode(email: string, code: string, naam?: string, appUrl?: string) {
   const onderwerp = "Je inlogcode voor Cheese Stock Manager";
-  const aanhef = naam ? `Beste ${naam},` : "Beste,";
-  const tekst = `${aanhef}\n\nJe eenmalige inlogcode voor de Cheese Stock Manager-app is: ${code}\n\nDeze code is 10 minuten geldig.\n\nMet vriendelijke groet,\nSysteembeheer | Van Beek & De Vreugd Kaas`;
-  await verstuurEmail(email, onderwerp, tekst, "Inlogcode");
+  const inhoud: MailInhoud = {
+    aanhef: naam ? `Hallo ${naam},` : "Hallo,",
+    regelsVoor: ["Je inlogcode voor Cheese Stock Manager is:"],
+    code,
+    regelsNa: ["De code is 10 minuten geldig. Heb je niet geprobeerd in te loggen? Dan kun je deze mail negeren."],
+    logoUrl: logoUrlVoor(appUrl),
+  };
+  await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Inlogcode", bouwMailHtml(inhoud));
 }
 
 // Uitnodigingsmail voor een nieuw aangemaakte gebruiker. De link wijst naar
@@ -186,6 +208,14 @@ export async function sendLoginCode(email: string, code: string, naam?: string) 
 // gevraagd (§4.2/§4.3). Er is dus bewust geen apart activatie-token nodig.
 export async function sendUitnodiging(email: string, naam: string, appUrl: string) {
   const onderwerp = "Uitnodiging voor Cheese Stock Manager";
-  const tekst = `Beste ${naam},\n\nJe bent uitgenodigd om de Cheese Stock Manager van Van Beek & De Vreugd Kaas te gaan gebruiken.\n\nKlik op onderstaande link om je account te activeren. Log in met dit e-mailadres (${email}) — je ontvangt dan een eenmalige inlogcode, en wordt daarna gevraagd een pincode aan te maken voor snelle toegang op dit toestel.\n\n${appUrl}\n\nMet vriendelijke groet,\nSysteembeheer | Van Beek & De Vreugd Kaas`;
-  await verstuurEmail(email, onderwerp, tekst, "Uitnodiging");
+  const inhoud: MailInhoud = {
+    aanhef: `Hallo ${naam},`,
+    regelsVoor: [
+      "Je bent uitgenodigd om de Cheese Stock Manager van Van Beek & De Vreugd Kaas te gaan gebruiken.",
+      `Klik op de knop om je account te activeren en log in met dit e-mailadres (${email}). Je ontvangt dan een eenmalige inlogcode en wordt daarna gevraagd een pincode aan te maken voor snelle toegang op dit toestel.`,
+    ],
+    knop: { tekst: "Naar Cheese Stock Manager", url: appUrl },
+    logoUrl: logoUrlVoor(appUrl),
+  };
+  await verstuurEmail(email, onderwerp, bouwMailTekst(inhoud), "Uitnodiging", bouwMailHtml(inhoud));
 }

@@ -42,7 +42,7 @@ async function haalGraphToken(): Promise<string> {
   return gecachedToken.token;
 }
 
-export async function verstuurMailViaGraph(naar: string, onderwerp: string, tekst: string) {
+export async function verstuurMailViaGraph(naar: string, onderwerp: string, tekst: string, html?: string) {
   const afzender = process.env.MS_SENDER_EMAIL;
   if (!afzender) {
     throw new Error("MS_SENDER_EMAIL ontbreekt — dit moet het mailadres zijn waarvandaan verstuurd wordt");
@@ -59,7 +59,7 @@ export async function verstuurMailViaGraph(naar: string, onderwerp: string, teks
     body: JSON.stringify({
       message: {
         subject: onderwerp,
-        body: { contentType: "Text", content: tekst },
+        body: html ? { contentType: "HTML", content: html } : { contentType: "Text", content: tekst },
         toRecipients: [{ emailAddress: { address: naar } }],
         // Zonder dit expliciete "from" stuurt Graph als het hoofdadres van
         // de mailbox, ook als MS_SENDER_EMAIL een alias is (bv.

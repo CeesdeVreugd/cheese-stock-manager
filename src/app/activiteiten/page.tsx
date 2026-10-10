@@ -10,6 +10,7 @@ const ACTIE_KLEUR: Record<string, string> = {
   Uitslag: "bg-greenSoft text-green",
   Afroep: "bg-blue-50 text-blue-700",
   Gebruiker: "bg-red-50 text-red-700",
+  Download: "bg-purple-50 text-purple-700",
 };
 
 export default async function ActiviteitenPage() {

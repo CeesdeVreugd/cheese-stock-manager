@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 import { getFacturatieOverzicht, huidigeGeneratieDatum, weekLabel } from "@/lib/facturatie";
+import { logActiviteit } from "@/lib/audit";
 import { fmtDatum as fmtDate, fmtDatumTijd as fmtDateTime } from "@/lib/format";
 
 // Zuiver geel (255,215,0), net als de balken in het oude Excel-rapport
@@ -172,6 +173,7 @@ export async function GET(req: NextRequest) {
   }
 
   const bytes = await pdf.save();
+  await logActiviteit(gebruiker, "Download", `Facturatieoverzicht ${label.pdfWeek} (${label.pdfRange}) als PDF gedownload`);
   return new NextResponse(new Uint8Array(bytes), {
     headers: {
       "Content-Type": "application/pdf",

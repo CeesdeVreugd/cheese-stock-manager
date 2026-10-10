@@ -19,10 +19,29 @@ export default async function GebruikersPage() {
     );
   }
 
-  const [gebruikers, rollen] = await Promise.all([
-    prisma.gebruiker.findMany({ orderBy: { naam: "asc" }, include: { rol: true } }),
+  const [gebruikersRuw, rollen] = await Promise.all([
+    prisma.gebruiker.findMany({
+      orderBy: { naam: "asc" },
+      include: {
+        rol: true,
+        pushSubscriptions: { select: { id: true } },
+        devicePincodes: { select: { createdAt: true }, orderBy: { createdAt: "asc" } },
+      },
+    }),
     prisma.rol.findMany({ orderBy: { naam: "asc" } }),
   ]);
+
+  // Per gebruiker: staan meldingen aan (op hoeveel toestellen), is de app
+  // geactiveerd (eerste login gedaan + pincode ingesteld, en sinds wanneer)
+  // en wanneer was de laatste login. Datums als tekst, zodat ze veilig naar
+  // de browser kunnen.
+  const gebruikers = gebruikersRuw.map(({ pushSubscriptions, devicePincodes, laatsteLogin, ...rest }) => ({
+    ...rest,
+    createdAt: rest.createdAt.toISOString(),
+    meldingenToestellen: pushSubscriptions.length,
+    geactiveerdOp: devicePincodes[0]?.createdAt.toISOString() ?? null,
+    laatsteLogin: laatsteLogin ? laatsteLogin.toISOString() : null,
+  }));
 
   return (
     <OntgrendelGate>

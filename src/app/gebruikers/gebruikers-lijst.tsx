@@ -30,6 +30,41 @@ export default function GebruikersLijst({
   const [teVerwijderen, setTeVerwijderen] = useState<Gebruiker | null>(null);
   const [gereset, setGereset] = useState<string | null>(null);
   const [uitnodigingStatus, setUitnodigingStatus] = useState<string | null>(null);
+  const [teBewerken, setTeBewerken] = useState<Gebruiker | null>(null);
+  const [bewerkNaam, setBewerkNaam] = useState("");
+  const [bewerkEmail, setBewerkEmail] = useState("");
+  const [bewerkFout, setBewerkFout] = useState<string | null>(null);
+
+  function startBewerken(g: Gebruiker) {
+    setTeBewerken(g);
+    setBewerkNaam(g.naam);
+    setBewerkEmail(g.email);
+    setBewerkFout(null);
+  }
+
+  async function bewaarBewerking(e: React.FormEvent) {
+    e.preventDefault();
+    if (!teBewerken) return;
+    setBusy(true);
+    setBewerkFout(null);
+    try {
+      const body: { naam: string; email?: string } = { naam: bewerkNaam };
+      if (teBewerken.id !== huidigId) body.email = bewerkEmail;
+      const res = await fetch(`/api/gebruikers/${teBewerken.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Opslaan mislukt");
+      setLijst((l) => l.map((x) => (x.id === teBewerken.id ? data.gebruiker : x)).sort((a, b) => a.naam.localeCompare(b.naam)));
+      setTeBewerken(null);
+    } catch (err: any) {
+      setBewerkFout(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function toevoegen(e: React.FormEvent) {
     e.preventDefault();
@@ -264,6 +299,9 @@ export default function GebruikersLijst({
               </div>
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
+                  <button onClick={() => startBewerken(g)} disabled={busy} className="text-xs text-ink underline flex-shrink-0">
+                    bewerken
+                  </button>
                   <button onClick={() => uitnodigen(g)} disabled={busy} className="text-xs text-green underline flex-shrink-0">
                     uitnodigen
                   </button>
@@ -331,6 +369,9 @@ export default function GebruikersLijst({
                 </td>
                 <td className="py-3 text-right">
                   <div className="flex gap-2 justify-end">
+                    <button onClick={() => startBewerken(g)} disabled={busy} className="text-xs text-ink underline">
+                      Bewerken
+                    </button>
                     <button onClick={() => uitnodigen(g)} disabled={busy} className="text-xs text-green underline">
                       Uitnodigen
                     </button>
@@ -376,6 +417,46 @@ export default function GebruikersLijst({
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {teBewerken && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <form onSubmit={bewaarBewerking} className="w-full max-w-sm rounded-2xl bg-white p-5 flex flex-col gap-3">
+            <p className="font-serif text-lg font-semibold text-green">Gebruiker bewerken</p>
+            <label className="text-xs font-semibold text-ink">
+              Naam
+              <input required value={bewerkNaam} onChange={(e) => setBewerkNaam(e.target.value)} className="input mt-1" />
+            </label>
+            <label className="text-xs font-semibold text-ink">
+              E-mailadres
+              <input
+                required
+                type="email"
+                value={bewerkEmail}
+                onChange={(e) => setBewerkEmail(e.target.value)}
+                disabled={teBewerken.id === huidigId}
+                className="input mt-1 disabled:opacity-60"
+              />
+            </label>
+            {teBewerken.id === huidigId ? (
+              <p className="text-[11px] text-inkSoft">Je eigen e-mailadres kun je niet zelf wijzigen (daarmee log je in); laat dat een andere beheerder doen.</p>
+            ) : (
+              <p className="text-[11px] text-inkSoft">Na een wijziging logt deze persoon voortaan in met het nieuwe e-mailadres.</p>
+            )}
+            {bewerkFout && <p className="text-sm text-red-600">{bewerkFout}</p>}
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setTeBewerken(null)}
+                className="rounded-xl border-[1.5px] border-line px-4 py-2 text-sm font-semibold"
+              >
+                Annuleren
+              </button>
+              <button disabled={busy} className="rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+                {busy ? "Bezig…" : "Opslaan"}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

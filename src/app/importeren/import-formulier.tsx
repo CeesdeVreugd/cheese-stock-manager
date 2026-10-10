@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Afwijking = { datum: string; partijcode: string; productafkomst: string; model: string; berekendGram: number; snapshotGram: number };
 type Controle = { dagenGecontroleerd: number; aantalAfwijkingen: number; afwijkingen: Afwijking[] };
-type Stand = { boxen: number; inslag: number; uitslag: number; snapshots: number; leeg: boolean };
+type Stand = { boxen: number; inslag: number; uitslag: number; afroepen: number; snapshots: number; leeg: boolean };
 
 type ProefResultaat = {
   ok: boolean;
@@ -43,6 +43,56 @@ export default function ImportFormulier() {
   const [bevestigd, setBevestigd] = useState(false);
   const [busy, setBusy] = useState(false);
   const [fout, setFout] = useState<string | null>(null);
+  const [stand, setStand] = useState<Stand | null>(null);
+  const [wisTekst, setWisTekst] = useState("");
+  const [wisBezig, setWisBezig] = useState(false);
+  const [wisKlaar, setWisKlaar] = useState<string | null>(null);
+
+  async function laadStand() {
+    try {
+      const res = await fetch("/api/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modus: "stand" }),
+      });
+      const antwoord = await res.json();
+      if (antwoord.database) setStand(antwoord.database);
+    } catch {
+      /* de stand is alleen informatief */
+    }
+  }
+
+  useEffect(() => {
+    laadStand();
+  }, []);
+
+  async function leegmaken() {
+    setWisBezig(true);
+    setFout(null);
+    setWisKlaar(null);
+    try {
+      const res = await fetch("/api/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modus: "leegmaken", bevestiging: wisTekst }),
+      });
+      const antwoord = await res.json();
+      if (!res.ok || !antwoord.ok) throw new Error(antwoord.fouten?.[0] || antwoord.error || "Leegmaken mislukt");
+      const v = antwoord.verwijderd as Stand;
+      setWisKlaar(
+        `Leeggemaakt: ${v.boxen} boxen, ${v.inslag} inslagregels, ${v.uitslag} uitslagregels, ${v.afroepen} afroepen en ${v.snapshots} dagsnapshots verwijderd.`
+      );
+      setWisTekst("");
+      setProef(null);
+      setUitvoer(null);
+      setBevestigd(false);
+      setStand(antwoord.database);
+    } catch (err: any) {
+      setFout(err.message || "Leegmaken mislukt");
+    } finally {
+      setWisBezig(false);
+    }
+  }
 
   async function kiesBestand(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -78,6 +128,7 @@ export default function ImportFormulier() {
       } else {
         if (antwoord.error) throw new Error(antwoord.error);
         setUitvoer(antwoord);
+        laadStand();
       }
     } catch (err: any) {
       setFout(err.message || "Er ging iets mis");
@@ -98,7 +149,7 @@ export default function ImportFormulier() {
         </p>
         <p className="text-inkSoft">
           Eerst draai je een <strong>proef</strong>: die controleert alles en schrijft niets weg. Pas daarna kun je importeren. Importeren kan alleen als
-          Voorraad, Inslag, Uitslag en de dagsnapshots nog leeg zijn, en gebeurt in één keer (alles of niets).
+          Voorraad, Inslag, Uitslag, Afroepen en de dagsnapshots nog leeg zijn, en gebeurt in één keer (alles of niets).
         </p>
       </div>
 
@@ -156,7 +207,7 @@ export default function ImportFormulier() {
             <div className={`rounded-xl p-3 text-sm ${proef.database.leeg ? "bg-greenSoft text-green" : "bg-red-50 text-red-800"}`}>
               {proef.database.leeg
                 ? "De database is leeg: importeren kan."
-                : `De database bevat al gegevens (${proef.database.boxen} boxen, ${proef.database.inslag} inslag, ${proef.database.uitslag} uitslag, ${proef.database.snapshots} snapshots). Importeren is geblokkeerd.`}
+                : `De database bevat al gegevens (${proef.database.boxen} boxen, ${proef.database.inslag} inslag, ${proef.database.uitslag} uitslag, ${proef.database.afroepen} afroepen, ${proef.database.snapshots} snapshots). Maak eerst leeg (onderaan deze pagina); importeren is nu geblokkeerd.`}
             </div>
           )}
 
@@ -195,6 +246,36 @@ export default function ImportFormulier() {
           <p className="text-inkSoft">Je kunt nu naar Facturatie om de weekoverzichten te controleren.</p>
         </div>
       )}
+      <div className="rounded-2xl border-[1.5px] border-red-200 bg-white p-5 space-y-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-red-700">Alles leegmaken</p>
+        <p className="text-sm text-ink">
+          Wist alle <strong>voorraad, inslag, uitslag, afroepen en dagsnapshots</strong> en zet de BoxID-teller terug op 1. Gebruikers, rollen,
+          validatielijsten en het activiteitenlog blijven staan. Dit kan <strong>niet ongedaan</strong> worden gemaakt.
+        </p>
+        {stand && (
+          <p className="text-sm text-inkSoft">
+            Nu in de database: {stand.boxen} boxen, {stand.inslag} inslagregels, {stand.uitslag} uitslagregels, {stand.afroepen} afroepen, {stand.snapshots} dagsnapshots.
+          </p>
+        )}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            value={wisTekst}
+            onChange={(e) => setWisTekst(e.target.value)}
+            placeholder="Typ LEEGMAKEN om te bevestigen"
+            className="input sm:max-w-xs"
+            autoComplete="off"
+          />
+          <button
+            onClick={leegmaken}
+            disabled={wisTekst !== "LEEGMAKEN" || wisBezig || (stand?.leeg ?? false)}
+            className={`${knop} bg-red-600 text-white`}
+          >
+            {wisBezig ? "Bezig…" : "Alles leegmaken"}
+          </button>
+        </div>
+        {stand?.leeg && <p className="text-xs text-inkSoft">Er valt niets te wissen: de database is al leeg.</p>}
+        {wisKlaar && <p className="text-sm text-green">{wisKlaar}</p>}
+      </div>
     </div>
   );
 }

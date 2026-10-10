@@ -11,9 +11,40 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const { id } = await params;
-  const { status, rolId, resetPincode, stuurUitnodiging } = await req.json();
+  const { status, rolId, resetPincode, stuurUitnodiging, naam, email } = await req.json();
 
-  const data: { status?: "actief" | "geblokkeerd"; rolId?: string } = {};
+  const data: { status?: "actief" | "geblokkeerd"; rolId?: string; naam?: string; email?: string } = {};
+
+  const voor = await prisma.gebruiker.findUnique({ where: { id } });
+  if (!voor) {
+    return NextResponse.json({ error: "Gebruiker niet gevonden" }, { status: 404 });
+  }
+
+  if (naam !== undefined) {
+    if (typeof naam !== "string" || naam.trim().length === 0) {
+      return NextResponse.json({ error: "Naam is verplicht" }, { status: 400 });
+    }
+    data.naam = naam.trim();
+  }
+
+  if (email !== undefined) {
+    const nieuwEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nieuwEmail)) {
+      return NextResponse.json({ error: "Geldig e-mailadres is verplicht" }, { status: 400 });
+    }
+    if (nieuwEmail !== voor.email) {
+      // Inloggen gaat met dit adres: een typfout in je eigen adres zou je
+      // buitensluiten. Een andere beheerder kan het wel voor je aanpassen.
+      if (id === gebruiker.id) {
+        return NextResponse.json({ error: "Je kunt je eigen e-mailadres niet wijzigen — laat dat een andere beheerder doen" }, { status: 400 });
+      }
+      const bestaand = await prisma.gebruiker.findUnique({ where: { email: nieuwEmail } });
+      if (bestaand && bestaand.id !== id) {
+        return NextResponse.json({ error: "Er bestaat al een gebruiker met dit e-mailadres" }, { status: 409 });
+      }
+      data.email = nieuwEmail;
+    }
+  }
 
   if (status !== undefined) {
     if (!["actief", "geblokkeerd"].includes(status)) {
@@ -39,7 +70,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     data.rolId = rolId;
   }
 
-  let bijgewerkt = await prisma.gebruiker.update({ where: { id }, data, include: { rol: true } });
+  let bijgewerkt;
+  try {
+    bijgewerkt = await prisma.gebruiker.update({ where: { id }, data, include: { rol: true } });
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      return NextResponse.json({ error: "Er bestaat al een gebruiker met dit e-mailadres" }, { status: 409 });
+    }
+    throw err;
+  }
+
+  if (data.naam !== undefined && data.naam !== voor.naam) {
+    await logActiviteit(gebruiker, "Gebruiker", `Naam gewijzigd van ${voor.naam} naar ${data.naam}`);
+  }
+  if (data.email !== undefined) {
+    await logActiviteit(gebruiker, "Gebruiker", `E-mailadres van ${bijgewerkt.naam} gewijzigd van ${voor.email} naar ${data.email}`);
+  }
 
   if (status !== undefined) {
     await logActiviteit(gebruiker, "Gebruiker", `${bijgewerkt.naam} op status "${status}" gezet`);

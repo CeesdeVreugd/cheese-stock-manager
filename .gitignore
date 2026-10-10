@@ -4,3 +4,6 @@ node_modules
 .env.local
 .env.docker
 *.log
+
+# echte bedrijfsgegevens uit de Excel-import: nooit in Git
+import-data*.json

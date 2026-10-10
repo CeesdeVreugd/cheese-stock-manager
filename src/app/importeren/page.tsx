@@ -27,7 +27,7 @@ export default async function ImporterenPage() {
           <div className="w-12" />
         </div>
         <div className="px-5 pb-6 md:px-10 md:py-10 md:max-w-3xl">
-          <h1 className="hidden md:block font-serif text-3xl font-semibold text-green mb-6">Eenmalige import uit Excel</h1>
+          <h1 className="hidden md:block font-serif text-3xl font-semibold text-green mb-6">Importeren en leegmaken</h1>
           <ImportFormulier />
         </div>
       </div>

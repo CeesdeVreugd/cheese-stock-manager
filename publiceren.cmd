@@ -1,31 +1,44 @@
 @echo off
-REM Dit script doet nu alleen nog wat er ook echt nog nodig is:
+REM Dit script doet twee dingen:
 REM 1) kopieert de bestanden uit deze map naar je vaste projectmap (en
 REM    verwijdert daar verouderde bestanden die hier niet meer bestaan)
 REM 2) commit en pusht de wijziging naar GitHub, met een omschrijving die
 REM    al is ingevuld
 REM
-REM Vercel/Neon zijn per <datum opschoning> buiten gebruik gesteld. De
-REM zelfgehoste VM (via Portainer) haalt wijzigingen rechtstreeks van
-REM GitHub op en regelt zijn eigen database-migratie/seed bij het opstarten
-REM van de container (zie docker-entrypoint.sh) — daarom hoeft dit script
-REM dat lokaal niet meer te doen.
+REM De app draait zelfgehost op de VM (via Portainer). Die haalt wijzigingen
+REM rechtstreeks van GitHub op en regelt zijn eigen database-migratie/seed
+REM bij het opstarten van de container (zie docker-entrypoint.sh).
+REM
+REM LET OP: pak de zip uit in een EIGEN, NIEUWE map (bijv. met "Alles uitpakken").
+REM Dit script kopieert alles wat naast het script staat.
 
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Standaardrol 'Lezer' wordt niet meer automatisch aangemaakt bij een nieuwe installatie."
+set "OMSCHRIJVING=Importpagina met leegmaken, gebruikers bewerken, opslagberekening per dagstart in Nederlandse tijd en weeknummer volgens het oude rapport."
+
+REM ---- Veiligheidscontrole: staat dit script echt in de uitgepakte app-map? ----
+REM Zonder deze controle zou een zip die per ongeluk in bijvoorbeeld Downloads
+REM is uitgepakt de hele map naar GitHub kunnen kopieren.
+for %%B in ("package.json" "docker-compose.yml" "prisma\schema.prisma" "src\app") do (
+  if not exist "%~dp0%%~B" goto :verkeerdeMap
+)
+set "AANTAL=0"
+for /f %%N in ('dir /b /a "%~dp0." ^| find /c /v ""') do set "AANTAL=%%N"
+if %AANTAL% GTR 40 goto :verkeerdeMap
 
 echo.
 echo ============================================
 echo  Stap 1/2: bestanden bijwerken
 echo ============================================
-echo Doel: %DOEL%
+echo Van:  %~dp0
+echo Naar: %DOEL%
 echo.
 
 REM /MIR zorgt dat verouderde/verwijderde bestanden ook in de doelmap
 REM verdwijnen. .git, node_modules, .next en .env blijven met rust.
-robocopy "%~dp0." "%DOEL%" /MIR /XD .git node_modules .next /XF .env .env.local /NFL /NDL /NJH /NJS
+REM import-data.json (echte bedrijfsgegevens) en zip-bestanden gaan NOOIT mee.
+robocopy "%~dp0." "%DOEL%" /MIR /XD .git node_modules .next /XF .env .env.local import-data.json *.zip /NFL /NDL /NJH /NJS
 
 if %errorlevel% GEQ 8 (
   echo.
@@ -61,3 +74,14 @@ echo Ga naar de "cheese-stock-manager"-stack in Portainer en klik op
 echo "Pull and redeploy" (met "Re-pull image and redeploy" aan) om 'm
 echo daadwerkelijk uit te rollen.
 pause
+exit /b 0
+
+:verkeerdeMap
+echo.
+echo STOP: dit script staat niet in de uitgepakte app-map, of die map bevat
+echo te veel andere bestanden. Er is niets gekopieerd en niets gepubliceerd.
+echo.
+echo Pak de zip uit in een eigen, nieuwe map en start publiceren.cmd daar.
+echo Gevonden in: %~dp0
+pause
+exit /b 1

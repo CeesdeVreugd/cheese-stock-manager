@@ -4,10 +4,14 @@ import { vereisOntgrendeldeGebruikerApi } from "@/lib/auth";
 import { logActiviteit } from "@/lib/audit";
 import { controleerTegenSnapshots, samenvatting, valideerImport } from "@/lib/import-data";
 
-// Eenmalige import van het omgezette Excel-bestand. Twee standen:
-//   "proef"     — controleert alleen en schrijft NIETS weg;
-//   "uitvoeren" — schrijft alles in één databasetransactie weg (alles of niets),
-//                 maar alleen als Box, Inslag, Uitslag en Dagsnapshots nog leeg zijn.
+// Import van het omgezette Excel-bestand en leegmaken van de bedrijfsgegevens.
+//   "stand"      — telt wat er in de database staat (wijzigt niets);
+//   "proef"      — controleert het importbestand en schrijft NIETS weg;
+//   "uitvoeren"  — schrijft alles in één databasetransactie weg (alles of niets),
+//                  maar alleen als Voorraad, Inslag, Uitslag, Afroepen en Dagsnapshots leeg zijn;
+//   "leegmaken"  — wist voorraad, inslag, uitslag, afroepen en dagsnapshots (alles of niets),
+//                  alleen met de getypte bevestiging LEEGMAKEN. Gebruikers, rollen,
+//                  validatielijsten en het activiteitenlog blijven staan.
 
 const BATCH = 500; // Postgres staat max. ~32.000 parameters per opdracht toe
 
@@ -16,13 +20,14 @@ async function inBatches<T>(rijen: T[], schrijf: (batch: T[]) => Promise<unknown
 }
 
 async function databaseStand() {
-  const [boxen, inslag, uitslag, snapshots] = await Promise.all([
+  const [boxen, inslag, uitslag, afroepen, snapshots] = await Promise.all([
     prisma.box.count(),
     prisma.inslagLog.count(),
     prisma.uitslagLog.count(),
+    prisma.afroep.count(),
     prisma.dagVoorraadSnapshot.count(),
   ]);
-  return { boxen, inslag, uitslag, snapshots, leeg: boxen + inslag + uitslag + snapshots === 0 };
+  return { boxen, inslag, uitslag, afroepen, snapshots, leeg: boxen + inslag + uitslag + afroepen + snapshots === 0 };
 }
 
 function naarDatum(s: string) {
@@ -34,14 +39,55 @@ export async function POST(req: NextRequest) {
   if (!gebruiker) return NextResponse.json({ error: "Niet ingelogd" }, { status: 401 });
   if (!gebruiker.rol.canBeheer) return NextResponse.json({ error: "Alleen een beheerder kan importeren" }, { status: 403 });
 
-  let body: { modus?: string; data?: unknown };
+  let body: { modus?: string; data?: unknown; bevestiging?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Het bestand kon niet worden gelezen" }, { status: 400 });
   }
-  if (body.modus !== "proef" && body.modus !== "uitvoeren") {
+  if (!["stand", "proef", "uitvoeren", "leegmaken"].includes(body.modus ?? "")) {
     return NextResponse.json({ error: "Onbekende stand" }, { status: 400 });
+  }
+
+  if (body.modus === "stand") {
+    return NextResponse.json({ ok: true, database: await databaseStand() });
+  }
+
+  if (body.modus === "leegmaken") {
+    // Server-side getypte bevestiging, los van wat de knop in de browser doet.
+    if (body.bevestiging !== "LEEGMAKEN") {
+      return NextResponse.json({ ok: false, fouten: ["Typ LEEGMAKEN om te bevestigen. Er is niets gewist."] }, { status: 400 });
+    }
+    const voor = await databaseStand();
+    try {
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.uitslagLog.deleteMany();
+          await tx.afroep.deleteMany();
+          await tx.inslagLog.deleteMany();
+          await tx.box.deleteMany();
+          await tx.dagVoorraadSnapshot.deleteMany();
+          // BoxID-teller weer op 1; een daaropvolgende import zet hem op het juiste nummer.
+          const teller = await tx.$queryRaw<{ naam: string | null }[]>`SELECT pg_get_serial_sequence('"Box"', 'boxId') AS naam`;
+          const naam = teller[0]?.naam;
+          if (!naam) throw new Error("De BoxID-teller is niet gevonden");
+          await tx.$queryRaw`SELECT setval(${naam}::regclass, 1, false)`;
+        },
+        { maxWait: 10_000, timeout: 60_000 }
+      );
+    } catch (err) {
+      console.error("Leegmaken mislukt:", err);
+      return NextResponse.json(
+        { ok: false, fouten: ["Leegmaken is mislukt en volledig teruggedraaid — er is niets gewist. Zie de serverlogs voor details."] },
+        { status: 500 }
+      );
+    }
+    await logActiviteit(
+      gebruiker,
+      "Leegmaken",
+      `Database leeggemaakt: ${voor.boxen} boxen, ${voor.inslag} inslagregels, ${voor.uitslag} uitslagregels, ${voor.afroepen} afroepen, ${voor.snapshots} dagsnapshots verwijderd`
+    );
+    return NextResponse.json({ ok: true, verwijderd: voor, database: await databaseStand() });
   }
 
   // Altijd opnieuw controleren op de server — de browser wordt niet vertrouwd.
@@ -77,7 +123,7 @@ export async function POST(req: NextRequest) {
   // ---- uitvoeren
   if (!stand.leeg) {
     return NextResponse.json(
-      { ok: false, fouten: ["De database bevat al gegevens (boxen, inslag, uitslag of dagsnapshots). Er is niets geïmporteerd."], database: stand },
+      { ok: false, fouten: ["De database bevat al gegevens (boxen, inslag, uitslag, afroepen of dagsnapshots). Maak eerst leeg. Er is niets geïmporteerd."], database: stand },
       { status: 409 }
     );
   }

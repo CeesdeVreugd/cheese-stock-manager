@@ -38,9 +38,15 @@ export function weekLabel(periode: { start: Date; eind: Date }) {
   // erbij zou nog in week 40 vallen).
   const iso = getIsoWeekNumber(periode.eind);
   const fmt = (d: Date) => d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", timeZone: "Europe/Amsterdam" });
+  const fmtVol = (d: Date) =>
+    d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Amsterdam" });
   return {
     week: `Week ${iso.week} · ${iso.year}`,
     range: `${fmt(periode.start)} t/m ${fmt(periode.eind)}`,
+    // Opmaak zoals in het oude rapport (voor de PDF)
+    pdfWeek: `W${String(iso.week).padStart(2, "0")}-${iso.year}`,
+    pdfRange: `${fmtVol(periode.start)} t/m ${fmtVol(periode.eind)}`,
+    bestandsnaam: `Facturatie_overzicht_Week_${iso.week}.pdf`,
   };
 }
 

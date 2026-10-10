@@ -42,7 +42,8 @@ export default function PincodeInstellenForm() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen px-6 pt-10 pb-8">
+    <div className="min-h-screen flex md:items-center md:justify-center md:bg-cream">
+      <div className="flex flex-col w-full max-w-sm px-6 pt-10 pb-8 md:px-8 md:py-9 md:rounded-2xl md:border-[1.5px] md:border-line md:bg-white md:shadow-sm md:min-h-0">
       <div className="mb-8">
         <img src="/logo-emblem.png" alt="Van Beek & De Vreugd Kaas" className="h-14 w-auto mb-3" />
         <div className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd Kaas</div>
@@ -85,6 +86,7 @@ export default function PincodeInstellenForm() {
           {busy ? "Instellen…" : "Pincode instellen"}
         </button>
       </form>
+      </div>
     </div>
   );
 }

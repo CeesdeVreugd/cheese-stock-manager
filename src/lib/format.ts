@@ -17,3 +17,8 @@ export function fmtDatumTijd(d: Date): string {
 export function fmtDatumKort(d: Date): string {
   return d.toLocaleDateString("nl-NL", { day: "2-digit", month: "2-digit", timeZone: TIJDZONE });
 }
+
+/** Getal in Nederlandse notatie met vaste decimalen, bv. 101940 -> "101.940,0". */
+export function fmtGetal(n: number, decimalen = 1): string {
+  return n.toLocaleString("nl-NL", { minimumFractionDigits: decimalen, maximumFractionDigits: decimalen });
+}

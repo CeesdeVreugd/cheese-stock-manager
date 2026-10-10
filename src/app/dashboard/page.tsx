@@ -3,6 +3,7 @@ import { vereisOntgrendeldeGebruiker } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import UitloggenKnop from "@/components/uitloggen-knop";
 import OntgrendelGate from "@/components/ontgrendel-gate";
+import { fmtGetal } from "@/lib/format";
 
 export default async function DashboardPage() {
   const gebruiker = await vereisOntgrendeldeGebruiker();
@@ -12,7 +13,8 @@ export default async function DashboardPage() {
     prisma.box.aggregate({ _sum: { nettoGram: true } }),
     gebruiker.rol.canReserveren ? prisma.afroep.count({ where: { status: "open" } }) : Promise.resolve(0),
   ]);
-  const totaalKg = ((totaalGram._sum.nettoGram ?? 0) / 1000).toFixed(1);
+  const totaalKg = fmtGetal((totaalGram._sum.nettoGram ?? 0) / 1000, 1);
+  const aantalBoxen = fmtGetal(boxCount, 0);
 
   const acties = [
     { href: "/inslag", label: "Inslag", sub: "Nieuwe box registreren", primary: true, mag: gebruiker.rol.canInslag },
@@ -21,7 +23,7 @@ export default async function DashboardPage() {
   ].filter((t) => t.mag);
 
   const overzichten = [
-    { href: "/voorraad", label: "Voorraad", sub: `${boxCount} boxen actief`, mag: gebruiker.rol.canVoorraad },
+    { href: "/voorraad", label: "Voorraad", sub: `${aantalBoxen} boxen actief`, mag: gebruiker.rol.canVoorraad },
     { href: "/inslag/overzicht", label: "Inslag overzicht", sub: "Historie & details", mag: gebruiker.rol.canInslag },
     { href: "/uitslag/overzicht", label: "Uitslag overzicht", sub: "Historie & details", mag: gebruiker.rol.canUitslag },
     { href: "/facturatie", label: "Facturatie", sub: "Weekoverzicht & PDF", mag: gebruiker.rol.canFacturatie },
@@ -63,10 +65,17 @@ export default async function DashboardPage() {
               <UitloggenKnop className="text-xs font-semibold text-white/70 underline" />
             </div>
           </div>
-          <p className="mt-4 text-sm text-white/70">Actuele voorraad</p>
-          <p className="font-serif text-3xl font-semibold text-white">
-            {boxCount} boxen · {totaalKg} kg
-          </p>
+          <p className="mt-4 text-xs uppercase tracking-wide text-white/60">Actuele voorraad</p>
+          <div className="mt-2 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl bg-white/10 px-4 py-3">
+              <p className="font-serif text-3xl font-semibold text-white leading-none">{aantalBoxen}</p>
+              <p className="mt-1.5 text-xs text-white/70">boxen</p>
+            </div>
+            <div className="rounded-2xl bg-white/10 px-4 py-3">
+              <p className="font-serif text-3xl font-semibold text-white leading-none">{totaalKg}</p>
+              <p className="mt-1.5 text-xs text-white/70">kg</p>
+            </div>
+          </div>
         </div>
 
         <div className="px-6 py-6">
@@ -150,11 +159,18 @@ export default async function DashboardPage() {
             <p className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd Kaas</p>
             <h1 className="font-serif text-3xl font-semibold text-green">Hoofdscherm</h1>
           </div>
-          <div className="text-right">
-            <p className="text-xs uppercase tracking-wide text-inkSoft mb-1">Actuele voorraad</p>
-            <p className="font-serif text-2xl font-semibold text-green">
-              {boxCount} boxen · {totaalKg} kg
-            </p>
+          <div>
+            <p className="text-xs uppercase tracking-wide text-inkSoft mb-2 text-right">Actuele voorraad</p>
+            <div className="flex gap-3">
+              <div className="rounded-2xl border-[1.5px] border-line bg-white px-6 py-3 min-w-[140px]">
+                <p className="font-serif text-3xl font-semibold text-green leading-none">{aantalBoxen}</p>
+                <p className="mt-1.5 text-xs text-inkSoft">boxen</p>
+              </div>
+              <div className="rounded-2xl border-[1.5px] border-line bg-white px-6 py-3 min-w-[190px]">
+                <p className="font-serif text-3xl font-semibold text-green leading-none">{totaalKg}</p>
+                <p className="mt-1.5 text-xs text-inkSoft">kg</p>
+              </div>
+            </div>
           </div>
         </div>
 

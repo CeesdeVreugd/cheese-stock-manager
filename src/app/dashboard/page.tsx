@@ -50,12 +50,12 @@ export default async function DashboardPage() {
       {/* ---------- Mobiel ---------- */}
       <div className="md:hidden">
         <div className="bg-green px-6 pt-8 pb-6 rounded-b-3xl">
-          <div className="flex items-center justify-between gap-3 whitespace-nowrap">
-            <div className="flex items-center gap-2 min-w-0">
-              <img src="/logo-emblem.png" alt="" className="h-7 w-auto flex-shrink-0" />
-              <span className="text-[10px] font-semibold uppercase tracking-wide text-white/70 truncate">Van Beek &amp; De Vreugd Kaas</span>
+          <div className="flex items-center gap-3">
+            <img src="/logo-emblem.png" alt="" className="h-11 w-auto flex-shrink-0" />
+            <div className="min-w-0">
+              <div className="text-[14px] font-bold uppercase tracking-wide text-white whitespace-nowrap">Van Beek &amp; De Vreugd Kaas</div>
+              <h1 className="mt-0.5 font-serif text-[15px] font-semibold text-white/75 leading-tight">Cheese Stock Manager</h1>
             </div>
-            <h1 className="font-serif text-[13px] font-semibold text-white flex-shrink-0">Cheese Stock Manager</h1>
           </div>
           <div className="mt-4 flex items-center justify-between">
             <p className="text-xs uppercase tracking-wide text-white/60">Actuele voorraad</p>

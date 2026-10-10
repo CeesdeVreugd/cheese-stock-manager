@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionGebruikerId, ensureDeviceId, hashValue } from "@/lib/auth";
-
-const SESSIE_DAGEN = 14;
+import { getSessieUren } from "@/lib/instellingen";
 
 export async function POST(req: NextRequest) {
   const gebruikerId = await getSessionGebruikerId();
@@ -16,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   const deviceId = await ensureDeviceId();
-  const sessieVerlooptOp = new Date(Date.now() + SESSIE_DAGEN * 24 * 60 * 60 * 1000);
+  const sessieVerlooptOp = new Date(Date.now() + (await getSessieUren()) * 60 * 60 * 1000);
 
   await prisma.devicePincode.upsert({
     where: { gebruikerId_deviceId: { gebruikerId, deviceId } },

@@ -21,7 +21,14 @@ export async function huidigPushAbonnement() {
 
 /** Vraagt toestemming (indien nog niet gevraagd) en abonneert dit toestel. */
 export async function schakelPushIn() {
-  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  // De sleutel komt bij elk gebruik van de server (niet uit de gebouwde code).
+  let publicKey: string | null = null;
+  try {
+    const res = await fetch("/api/push/sleutel", { cache: "no-store" });
+    publicKey = (await res.json()).sleutel ?? null;
+  } catch {
+    publicKey = null;
+  }
   if (!publicKey) {
     throw new Error("Pushmeldingen zijn nog niet ingesteld op de server (VAPID-sleutel ontbreekt).");
   }

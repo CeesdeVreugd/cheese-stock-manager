@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { zetOntgrendeld } from "@/components/ontgrendel-gate";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -43,7 +44,13 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Ongeldige code");
-      router.push("/pincode/instellen");
+      if (data.heeftPincode) {
+        // Pincode staat al op dit toestel: direct door (net ingelogd met code).
+        zetOntgrendeld();
+        router.push("/dashboard");
+      } else {
+        router.push("/pincode/instellen");
+      }
       router.refresh();
     } catch (err: any) {
       setError(err.message);

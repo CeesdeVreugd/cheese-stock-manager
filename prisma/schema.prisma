@@ -235,6 +235,14 @@ model AuditLog {
   createdAt      DateTime @default(now())
 }
 
+// Instellingen die een beheerder in de app aanpast (sleutel/waarde), bv. hoe
+// lang een inlog geldig blijft. Zie lib/instellingen.ts.
+model Instelling {
+  sleutel   String   @id
+  waarde    String
+  updatedAt DateTime @updatedAt
+}
+
 // Eén rij per toestel dat meldingen heeft ingeschakeld (§ pushmeldingen bij
 // afroeporders). Een gebruiker kan op meerdere toestellen ingeschreven staan.
 model PushSubscription {

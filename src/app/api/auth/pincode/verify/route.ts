@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   if (devicePincode.sessieVerlooptOp < new Date()) {
     return NextResponse.json(
-      { error: "VERLOPEN", message: "Deze sessie is verlopen (2 weken). Log opnieuw in met e-mail." },
+      { error: "VERLOPEN", message: "Deze sessie is verlopen. Log opnieuw in met e-mail." },
       { status: 401 }
     );
   }

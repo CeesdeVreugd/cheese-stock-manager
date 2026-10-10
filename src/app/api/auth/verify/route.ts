@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashValue, setSessionCookie, ensureDeviceId, registreerLogin } from "@/lib/auth";
+import { getSessieUren } from "@/lib/instellingen";
 
 export async function POST(req: NextRequest) {
   const { email, code } = await req.json();
@@ -34,8 +35,22 @@ export async function POST(req: NextRequest) {
   });
 
   await setSessionCookie(gebruiker.id);
-  await ensureDeviceId();
+  const deviceId = await ensureDeviceId();
   await registreerLogin(gebruiker.id);
 
-  return NextResponse.json({ ok: true });
+  // Pincode onthouden: heeft deze persoon op dit toestel al eerder een pincode
+  // ingesteld, dan blijft die staan en geldt hij opnieuw voor de nieuwe
+  // inlogperiode — er hoeft geen nieuwe pincode te worden gekozen.
+  const bestaand = await prisma.devicePincode.findUnique({
+    where: { gebruikerId_deviceId: { gebruikerId: gebruiker.id, deviceId } },
+  });
+  if (bestaand) {
+    const uren = await getSessieUren();
+    await prisma.devicePincode.update({
+      where: { id: bestaand.id },
+      data: { sessieVerlooptOp: new Date(Date.now() + uren * 60 * 60 * 1000) },
+    });
+  }
+
+  return NextResponse.json({ ok: true, heeftPincode: !!bestaand });
 }

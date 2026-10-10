@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { prisma } from "@/lib/prisma";
+import { vapidPublicKey, vapidPrivateKey } from "@/lib/push-config";
 
 let geconfigureerd = false;
 let configuratieOntbreekt = false;
@@ -7,8 +8,8 @@ let configuratieOntbreekt = false;
 function zorgVoorConfig(): boolean {
   if (geconfigureerd) return true;
   if (configuratieOntbreekt) return false;
-  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  const privateKey = process.env.VAPID_PRIVATE_KEY;
+  const publicKey = vapidPublicKey();
+  const privateKey = vapidPrivateKey();
   const subject = process.env.VAPID_SUBJECT || "mailto:info@example.com";
   if (!publicKey || !privateKey) {
     // Dit mag NOOIT de aanroepende actie (bv. een afroep aanmaken) laten
@@ -16,8 +17,8 @@ function zorgVoorConfig(): boolean {
     // eigenlijke handeling. Gewoon loggen en stil overslaan.
     console.error(
       "Pushmeldingen overgeslagen: VAPID-sleutels ontbreken in de omgevingsvariabelen " +
-        "(NEXT_PUBLIC_VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY). Zet deze in Vercel's Environment " +
-        "Variables en deploy opnieuw."
+        "(VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY). Zet deze bij de omgevingsvariabelen van de " +
+        "stack in Portainer en herstart de stack."
     );
     configuratieOntbreekt = true;
     return false;

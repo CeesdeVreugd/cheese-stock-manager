@@ -116,3 +116,10 @@ latere stap — zie het eerdere migratie-stappenplan.
 5. Na de import rekent de app de voorraad van elke snapshotdag opnieuw na uit de database zelf en meldt het aantal afwijkingen (hoort 0 te zijn).
 
 Facturatie-dagen lopen van 00:00 tot 24:00 Nederlandse tijd, en de opslag telt de voorraad aan het **begin** van elke dag (zoals het oude systeem).
+
+
+## Pushmeldingen (VAPID-sleutels)
+Zet in Portainer, bij de omgevingsvariabelen van de stack: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` en `VAPID_SUBJECT` (bv. `mailto:info@beekvreugdkaas.nl`). De oude naam `NEXT_PUBLIC_VAPID_PUBLIC_KEY` blijft als terugval werken. Een nieuw paar maak je met `node scripts/generate-vapid-keys.js`. Na een nieuw paar moet iedereen meldingen opnieuw aanzetten.
+
+## Inlogduur
+Beheer → Instellingen: hoe lang een inlog geldig blijft (1 uur t/m 365 dagen, standaard 14 dagen). De pincode van een toestel blijft bewaard; na opnieuw inloggen met e-mailcode hoeft geen nieuwe pincode gekozen te worden.

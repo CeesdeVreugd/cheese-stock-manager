@@ -2,12 +2,14 @@ import crypto from "crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getSessieUren } from "@/lib/instellingen";
 import { bouwMailHtml, bouwMailTekst, type MailInhoud } from "@/lib/mail-template";
 
 const SESSION_COOKIE = "csm_session";
 const UNLOCK_COOKIE = "csm_unlocked";
 const DEVICE_COOKIE = "csm_device";
-const SESSION_DAYS = 14; // harde 2-weken-grens, zie ontwerpdocument §4.3
+// Hoe lang een inlog geldig blijft is instelbaar (Beheer → Instellingen, standaard
+// 2 weken, zie ontwerpdocument §4.3) en komt uit lib/instellingen.ts.
 
 function secret() {
   return process.env.SESSION_SECRET || "dev-only-onveilige-fallback-sleutel";
@@ -28,8 +30,8 @@ function sign(payload: string): string {
 // ---------- Volledige login-sessie (e-mail + code, §4.2) ----------
 
 // Simpel, afhankelijkheidsvrij session-token: "<gebruikerId>.<verlooptOp>.<handtekening>"
-export function createSessionToken(gebruikerId: string): string {
-  const verlooptOp = Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000;
+export function createSessionToken(gebruikerId: string, uren: number): string {
+  const verlooptOp = Date.now() + uren * 60 * 60 * 1000;
   const payload = `${gebruikerId}.${verlooptOp}`;
   return `${payload}.${sign(payload)}`;
 }
@@ -45,14 +47,15 @@ export function verifySessionToken(token: string | undefined): string | null {
 }
 
 export async function setSessionCookie(gebruikerId: string) {
-  const token = createSessionToken(gebruikerId);
+  const uren = await getSessieUren();
+  const token = createSessionToken(gebruikerId, uren);
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_DAYS * 24 * 60 * 60,
+    maxAge: uren * 60 * 60,
   });
 }
 

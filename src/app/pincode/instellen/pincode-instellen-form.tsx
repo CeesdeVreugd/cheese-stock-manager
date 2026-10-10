@@ -48,8 +48,8 @@ export default function PincodeInstellenForm() {
         <div className="text-xs uppercase tracking-wide text-inkSoft mb-1">Van Beek &amp; De Vreugd Kaas</div>
         <h1 className="font-serif text-2xl font-semibold text-green">Stel je pincode in</h1>
         <p className="text-sm text-inkSoft mt-2">
-          Hiermee open je de app voortaan snel op dit toestel, zonder steeds een nieuwe e-mailcode. Om de
-          twee weken vragen we opnieuw om in te loggen met e-mail.
+          Hiermee open je de app voortaan snel op dit toestel, zonder steeds een nieuwe e-mailcode. Na afloop van de inlogperiode
+          vragen we opnieuw om in te loggen met e-mail; je pincode blijft dan gewoon bewaard.
         </p>
       </div>
 

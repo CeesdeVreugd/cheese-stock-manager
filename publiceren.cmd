@@ -15,7 +15,7 @@ REM Dit script kopieert alles wat naast het script staat.
 setlocal
 
 set "DOEL=C:\1 Automatiserings projecten\VanBeekDeVreugdKaas\Cheesstockmanager\cheese-stock-manager"
-set "OMSCHRIJVING=Download in activiteiten, meldingen/activatie/laatste login per gebruiker, inlogmail in huisstijl."
+set "OMSCHRIJVING=Pushmeldingen: VAPID-sleutel runtime, instelbare inlogduur onder Beheer, pincode blijft bewaard na opnieuw inloggen."
 
 REM ---- Veiligheidscontrole: staat dit script echt in de uitgepakte app-map? ----
 REM Zonder deze controle zou een zip die per ongeluk in bijvoorbeeld Downloads
@@ -61,9 +61,13 @@ echo.
 echo ============================================
 echo  Stap 2/2: publiceren naar GitHub
 echo ============================================
-git add .
-git commit -m "%OMSCHRIJVING%"
-git push
+REM gc.auto=0: git ruimt zijn eigen map niet op tijdens dit script. Op Windows
+REM blokkeert vaak virusscanner of synchronisatie een map in .git, waarna git
+REM blijft wachten op "Should I try again? (y/n)". safecrlf=false haalt de
+REM LF/CRLF-waarschuwingen weg (die zijn onschuldig).
+git -c gc.auto=0 -c core.safecrlf=false add .
+git -c gc.auto=0 -c core.safecrlf=false commit -m "%OMSCHRIJVING%"
+git -c gc.auto=0 push
 
 echo.
 echo ============================================

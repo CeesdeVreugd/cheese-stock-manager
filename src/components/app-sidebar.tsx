@@ -67,6 +67,7 @@ export default function AppSidebar({
         { href: "/gebruikers", label: "Gebruikers", mag: rol.canBeheer },
         { href: "/rollen", label: "Rollen", mag: rol.canBeheer },
         { href: "/importeren", label: "Importeren", mag: rol.canBeheer },
+        { href: "/instellingen", label: "Instellingen", mag: rol.canBeheer },
         { href: "/activiteiten", label: "Activiteiten", mag: rol.canActiviteiten },
       ],
     },

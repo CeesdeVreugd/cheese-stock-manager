@@ -11,7 +11,7 @@ function b64url(buf) {
 }
 
 console.log("Zet dit in je .env-bestand (en in Vercel):\n");
-console.log(`NEXT_PUBLIC_VAPID_PUBLIC_KEY=${b64url(ecdh.getPublicKey())}`);
+console.log(`VAPID_PUBLIC_KEY=${b64url(ecdh.getPublicKey())}`);
 console.log(`VAPID_PRIVATE_KEY=${b64url(ecdh.getPrivateKey())}`);
 console.log(
   "\nLet op: als je deze wijzigt, moet iedereen die meldingen had ingeschakeld dit opnieuw doen " +

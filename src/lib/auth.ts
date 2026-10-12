@@ -233,7 +233,10 @@ export async function sendLoginCode(email: string, code: string, naam?: string, 
 // de startpagina van de app — dat leidt vanzelf naar /login, en na de
 // eerste succesvolle e-mail+code-login wordt automatisch om een pincode
 // gevraagd (§4.2/§4.3). Er is dus bewust geen apart activatie-token nodig.
-export async function sendUitnodiging(email: string, naam: string, appUrl: string) {
+export async function sendUitnodiging(email: string, naam: string, _appUrl?: string) {
+  // De herkomst van het verzoek is in Docker het interne adres; de link moet
+  // altijd naar het openbare adres van de app wijzen.
+  const appUrl = (process.env.APP_URL || OPENBARE_APP_URL).replace(/\/+$/, "");
   const logo = logoVoorMail();
   const onderwerp = "Uitnodiging voor Cheese Stock Manager";
   const inhoud: MailInhoud = {

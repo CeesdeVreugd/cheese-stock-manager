@@ -1,6 +1,6 @@
 "use client";
 
-import { fmtGetal } from "@/lib/format";
+import { fmtGetal, fmtDatumTijd } from "@/lib/format";
 import { useMemo, useState } from "react";
 import QrScanner from "@/components/qr-scanner";
 
@@ -13,6 +13,8 @@ type Box = {
   productiedatum: string; // ISO-string, meegegeven vanuit de server component
   aantalKazen: number;
   nettoGram: number;
+  inslag: string; // ISO: moment van inslag
+  laatsteMutatie: string; // ISO: laatste wijziging aan de box
 };
 
 function leeftijdInWeken(productiedatum: string): number {
@@ -276,6 +278,10 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
                   <div className="text-inkSoft mt-1">LEEFTIJD</div>
                   <div className="font-medium">{fmtDatum(box.productiedatum)}</div>
                   <div className={`font-medium ${weken > 8 ? "text-goldDeep" : ""}`}>{weken} weken</div>
+                  <div className="text-inkSoft mt-1">INSLAG</div>
+                  <div className="text-inkSoft mt-1">LAATSTE MUTATIE</div>
+                  <div className="font-medium">{fmtDatum(box.inslag)}</div>
+                  <div className="font-medium">{fmtDatumTijd(new Date(box.laatsteMutatie))}</div>
                 </div>
               </div>
             </div>
@@ -298,6 +304,8 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
               <th className="py-3 px-4 font-semibold text-right">Leeftijd</th>
               <th className="py-3 px-4 font-semibold text-right">Aantal</th>
               <th className="py-3 px-4 font-semibold text-right">Netto kg</th>
+              <th className="py-3 px-4 font-semibold">Inslag</th>
+              <th className="py-3 px-4 font-semibold">Laatste mutatie</th>
             </tr>
           </thead>
           <tbody>
@@ -329,6 +337,8 @@ export default function VoorraadLijst({ boxen, beschikbaarPerBox = {} }: { boxen
                   <td className={`py-2.5 px-4 text-right ${weken > 8 ? "font-semibold text-goldDeep" : ""}`}>{weken} weken</td>
                   <td className="py-2.5 px-4 text-right">{box.aantalKazen} stuks</td>
                   <td className="py-2.5 px-4 text-right font-semibold">{fmtGetal(box.nettoGram / 1000, 1)} kg</td>
+                  <td className="py-2.5 px-4 whitespace-nowrap">{fmtDatum(box.inslag)}</td>
+                  <td className="py-2.5 px-4 whitespace-nowrap text-inkSoft">{fmtDatumTijd(new Date(box.laatsteMutatie))}</td>
                 </tr>
               );
             })}

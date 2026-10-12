@@ -13,6 +13,15 @@ export default async function VoorraadPage() {
   if (!gebruiker.rol.canVoorraad) return <GeenToegang />;
 
   const boxenRaw = await prisma.box.findMany({ orderBy: { createdAt: "desc" } });
+  // Echte inslagmoment uit de inslaghistorie (de box zelf kan later zijn
+  // aangemaakt, bv. bij de import); zonder historie valt het terug op createdAt.
+  const inslagen = await prisma.inslagLog.groupBy({
+    by: ["boxId"],
+    where: { boxId: { in: boxenRaw.map((b) => b.boxId) } },
+    _min: { inslagtijd: true },
+  });
+  const inslagPerBox = new Map(inslagen.map((i) => [i.boxId, i._min.inslagtijd]));
+
   const boxen = boxenRaw.map((b) => ({
     id: b.id,
     boxId: b.boxId,
@@ -22,6 +31,8 @@ export default async function VoorraadPage() {
     productiedatum: b.productiedatum.toISOString(),
     aantalKazen: b.aantalKazen,
     nettoGram: b.nettoGram,
+    inslag: (inslagPerBox.get(b.boxId) ?? b.createdAt).toISOString(),
+    laatsteMutatie: b.laatsteMutatie.toISOString(),
   }));
 
   const totaalBoxen = fmtGetal(boxen.length, 0);
